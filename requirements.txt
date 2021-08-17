@@ -1,0 +1,6 @@
+tensorFlow==2.5.0
+six==1.15.0
+regex=2021.7.6
+numpy==1.19.5
+torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html
+nltk==3.6.2
