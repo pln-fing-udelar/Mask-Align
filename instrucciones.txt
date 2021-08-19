@@ -1,0 +1,9 @@
+- Instalar pyenv
+- pyenv install miniconda3-latest
+- pyenv local miniconda3-latest
+- Instalar mamba: conda install -c conda-forge mamba
+- mamba create env (teniendo el enviroment.yml en la carpeta)
+- Para generar un corpus de entrenamiento, seguir la guía en https://github.com/THUNLP-MT/THUMT/blob/master/docs/walkthrough.md#data-preparation
+- Modificar python por python3.9 en bin/train.sh
+- copiar el archivo this.config a configs/user
+- Entrenar: bash thualign/bin/train.sh -s this
