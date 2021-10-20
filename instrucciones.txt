@@ -1,9 +1,56 @@
-- Instalar pyenv
-- pyenv install miniconda3-latest
-- pyenv local miniconda3-latest
-- Instalar mamba: conda install -c conda-forge mamba
-- mamba create env (teniendo el enviroment.yml en la carpeta)
-- Para generar un corpus de entrenamiento, seguir la guía en https://github.com/THUNLP-MT/THUMT/blob/master/docs/walkthrough.md#data-preparation
-- Modificar python por python3.9 en bin/train.sh
-- copiar el archivo this.config a configs/user
-- Entrenar: bash thualign/bin/train.sh -s this
+0. Instalar los requisitos
+       - Python 3.9
+       - Driver de CUDA
+       - Instalar con pip los siguientes requirements
+               tensorFlow==2.5.0
+               six==1.15.0
+               regex==2021.7.6
+               numpy==1.19.5
+               torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html
+               nltk==3.6.2
+
+1. Preparar el corpus
+       - Descargarlo de https://www.statmt.org/europarl/, se obtiene un par de archivos paralelos, uno para cada lenguaje
+       - Eliminar las oraciones que no tienen una correspondiente (se corresponden con una línea vacía en el otro archivo)
+       - Eliminar pares de oraciones de largo 1 o largo mayor a 120 (las demasiado largas requieren demasiada memoria)
+       - Eliminar oraciones con tags (las que contienen el caracter "<" o ">")
+       - Separar en archivos de corpus, validación y test. Los archivos de validación deben tener 2000 oraciones y los de test 500.
+       - Nombrar a los archivos corpus.es, validacion.es, test.es, corpus.en, validacion.en y test.en
+       - Instalar sentencepiece con el comando "pip install sentencepiece"  (https://github.com/google/sentencepiece)
+       - Ejecutar los siguientes comandos para aprender el vocabulario y tokenizar los archivos
+              spm_train --input=corpus.en --model_prefix=en --vocab_size=32000 --character_coverage=1.0 --model_type=unigram
+              spm_train --input=corpus.es --model_prefix=es --vocab_size=32000 --character_coverage=1.0 --model_type=unigram
+              spm_encode --model=en.model --output_format=piece < corpus.en > corpus.32k.en
+              spm_encode --model=en.model --output_format=piece < validation.en > validation.32k.en
+              spm_encode --model=en.model --output_format=piece < test.en > test.32k.en
+              spm_encode --model=es.model --output_format=piece < corpus.es > corpus.32k.es
+              spm_encode --model=es.model --output_format=piece < validation.es > validation.32k.es
+              spm_encode --model=es.model --output_format=piece < test.es > test.32k.es
+
+        - Descargar el script shuffle_corpus.py de https://github.com/THUNLP-MT/Mask-Align/tree/main/thualign/scripts y ejecutar
+              python3 thualign/scripts/shuffle_corpus.py --corpus corpus.32k.es corpus.32k.en
+
+        - En los vocabularios, sustituir los tags <s> y </s> por <eos> y <pad>
+
+2. Entrenar el modelo
+       - Clonarlo de https://github.com/THUNLP-MT/Mask-Align
+       - Crear una config llamada spanish.config en la carpeta thualign/configs/user, basada en example.config
+       - Indicar la ubicación de los siguientes archivos
+             - corpus.32k.es.shuf
+             - corpus.32k.en.shuf
+             - validation.32k.es
+             - validation.32k.en
+             - test.32k.es
+             - test.32k.en
+             - es.vocab
+             - en.vocab
+        - En device_list poner la cantidad de GPUs que se tienen
+        - En batch_size poner el valor más alto que se pueda sin que el modelo se quede sin memoria al entrenar (ir probando)
+        - En update_cycle poner el resultado de la división 36000 / batch_size
+        - Parado en la raiz del repo clonado, ejecutar para entrenar: bash thualign/bin/train.sh -s spanish
+        - El modelo queda guardado dentro de una carpeta que se crea en el directorio donde estamos parados
+
+3. Testear el modelo y generar alignments
+        - Luego de que termine de entrenar (por defecto son 50000 steps), ejecutar para testear: bash thualign/bin/test.sh -s spanish -gvt
+        - Los alignemnts generados están en una carpeta llamada "test" al lado de donde se guardó el modelo, en el archivo alignments.txt
+        - Para ver los alignments de forma interactiva, ejecutar: python thualign/scripts/visualize.py spanish/output/test/alignment_vizdata.pt
