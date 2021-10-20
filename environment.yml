@@ -8,5 +8,5 @@ dependencies:
   - numpy
   - pytorch=1.8.1
   - nltk=3.6.2
-  - cudatoolkit
+  - cudatoolkit=10.2
   - python=3.9
