@@ -34,7 +34,7 @@
 
 2. Entrenar el modelo
        - Clonarlo de https://github.com/THUNLP-MT/Mask-Align
-       - Crear una config llamada spanish.config en la carpeta thualign/configs/user, basada en example.config
+       - Crear una config llamada spanish.config en la carpeta thualign/configs/user, basada en example.config (en el root del repo hay un spanish.config para usar)
        - Indicar la ubicación de los siguientes archivos
              - corpus.32k.es.shuf
              - corpus.32k.en.shuf
@@ -52,5 +52,10 @@
 
 3. Testear el modelo y generar alignments
         - Luego de que termine de entrenar (por defecto son 50000 steps), ejecutar para testear: bash thualign/bin/test.sh -s spanish -gvt
-        - Los alignemnts generados están en una carpeta llamada "test" al lado de donde se guardó el modelo, en el archivo alignments.txt
+        - Los alignments generados están en una carpeta llamada "test" al lado de donde se guardó el modelo, en el archivo alignments.txt
         - Para ver los alignments de forma interactiva, ejecutar: python thualign/scripts/visualize.py spanish/output/test/alignment_vizdata.pt
+4. Alinear respuestas dentro de una oración
+        - Además del archivo en español y en inglés para testear, se debe agregar otro con la respuesta (que debe ser una substring de de la oración en ingles)
+        - Indicar la ubicación de este archivo en spanish.config, con la propiedad "test_answers", de forma similar a como se hace con "test_input"
+        - Ejecutar: bash thualign/bin/generate.sh -s spanish -o test.txt
+        - En el archivo ./test.txt queda la respuesta en español, obtenida a partir de la alineación de la respuesta en inglés
