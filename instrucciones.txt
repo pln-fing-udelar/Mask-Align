@@ -56,6 +56,6 @@
         - Para ver los alignments de forma interactiva, ejecutar: python thualign/scripts/visualize.py spanish/output/test/alignment_vizdata.pt
 4. Alinear respuestas dentro de una oración
         - Además del archivo en español y en inglés para testear, se debe agregar otro con la respuesta (que debe ser una substring de de la oración en ingles)
-        - Indicar la ubicación de este archivo en spanish.config, con la propiedad "test_answers", de forma similar a como se hace con "test_input"
+        - Indicar la ubicación de este archivo en spanish.config, con la propiedad "test_answers", de forma similar a como se hace con "test_ref"
         - Ejecutar: bash thualign/bin/generate.sh -s spanish -o test.txt
         - En el archivo ./test.txt queda la respuesta en español, obtenida a partir de la alineación de la respuesta en inglés
