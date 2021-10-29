@@ -174,8 +174,8 @@ def gen_align(params):
                 
                 ans_es = ""
                 if first_word_in_answer != -1 and last_word_in_answer != -1:
-                    min_idx = max(0, first_word_in_answer - 1)
-                    max_idx = min(len(src), last_word_in_answer+2)
+                    min_idx = max(0, first_word_in_answer)
+                    max_idx = min(len(src), last_word_in_answer+1)
                     ans_es = " ".join(src[min_idx:max_idx])
                     ans_es += "\n"
                     ans_es += " ".join("{:.2f}".format(x) for x in weight_added_per_word.tolist()[min_idx:max_idx])
