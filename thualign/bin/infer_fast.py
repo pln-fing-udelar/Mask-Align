@@ -156,8 +156,11 @@ def gen_align(params):
                 tgt = tgt_file.readline().strip().split()
                 ans = ans_file.readline().strip().split()
                 
-                answer_position = find_sub_list(ans,tgt)
+                # if the "ans" file contains the answer in plain text, use this:
+                #answer_position = find_sub_list(ans,tgt)
                 
+                # if the "ans" file contains the position of the answer in the format idx1:idx2, use this:
+                answer_position = int(ans.split(":")[0]), int(ans.split(":")[1])
                 
                 # calculate alignment scores (weight_final) for each sentence pair
                 weight_f, weight_b = weight_f.detach(), weight_b.detach()
