@@ -10,3 +10,4 @@ dependencies:
   - nltk=3.6.2
   - cudatoolkit=10.2
   - python=3.9
+  - sentencepiece
