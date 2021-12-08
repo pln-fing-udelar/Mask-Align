@@ -74,6 +74,28 @@ def get_last_greater_than(l, threshold):
         if val > threshold:
             last_idx = idx
     return last_idx
+    
+def get_token_indexes(ans_idxs, src):
+    idx1 = -1
+    idx2 = -1
+    current_char = 0
+    search1 = True
+
+    char_idx1, char_idx2 = int(ans_idxs[0].split(":")[0]), int(ans_idxs[0].split(":")[1])
+
+    
+    for idx, tok in enumerate(src):
+        #print("-" + tok + "-" + str(len(tok)))
+        current_char += len(tok) + 1
+        if char_idx1 < current_char and search1:
+            idx1 = idx
+            search1 = False
+        if char_idx2 < current_char:
+            idx2 = idx
+            break
+
+    return idx1, idx2
+    
 
 def gen_align(params):
     """Generate alignments
@@ -157,10 +179,10 @@ def gen_align(params):
                 ans = ans_file.readline().strip().split()
                 
                 # if the "ans" file contains the answer in plain text, use this:
-                answer_position = find_sub_list(ans,tgt)
+                #answer_position = find_sub_list(ans,tgt)
                 
                 # if the "ans" file contains the position of the answer in the format idx1:idx2, use this:
-                #answer_position = int(ans.split(":")[0]), int(ans.split(":")[1])
+                answer_position = get_token_indexes(ans, src)
                 
                 # calculate alignment scores (weight_final) for each sentence pair
                 weight_f, weight_b = weight_f.detach(), weight_b.detach()
@@ -172,18 +194,29 @@ def gen_align(params):
                 
                 weight_added_per_word = torch.sum(weight_final, axis=0)
 
-                first_word_in_answer = get_first_greater_than(weight_added_per_word, extract_params['th'])
-                last_word_in_answer = get_last_greater_than(weight_added_per_word, extract_params['th'])
+                threshold = 0.2
+
+                first_word_in_answer = get_first_greater_than(weight_added_per_word, threshold)
+                last_word_in_answer = get_last_greater_than(weight_added_per_word, threshold)
                 
                 ans_es = ""
                 if first_word_in_answer != -1 and last_word_in_answer != -1:
                     min_idx = max(0, first_word_in_answer)
                     max_idx = min(len(src), last_word_in_answer+1)
                     ans_es = " ".join(src[min_idx:max_idx])
-                    ans_es += "\n"
-                    ans_es += " ".join("{:.2f}".format(x) for x in weight_added_per_word.tolist()[min_idx:max_idx])
-                    ans_es += "\n"                
-
+                    #ans_es += " ".join("{:.2f}".format(x) for x in weight_added_per_word.tolist()[min_idx:max_idx])
+                    #ans_es += "\n"                
+                    #print(ans_es)
+               # else:
+                    #print("ERROR")
+                    #print(first_word_in_answer)
+                    #print(last_word_in_answer)
+                    #print(threshold)
+                    #print(weight_added_per_word)
+                    #print(weight_b)
+                    #print(weight_f)
+                    #print("--------------------------------------------") 
+                #print("----------------")
                 output_file.write(ans_es + '\n')
                 
             t = time.time() - t
