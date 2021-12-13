@@ -148,10 +148,11 @@ def gen_align(params):
               f"ans_file: {os.path.abspath(params.test_answers)}\n"
               f"alignment_output: {os.path.abspath(params.alignment_output)}")
 
-        src_file = open(params.test_input[0])
-        tgt_file = open(params.test_input[1])
-        ans_file = open(params.test_answers)
-        output_file = open(params.alignment_output, 'w')
+        src_file = open(params.test_input[0], encoding="utf8")
+        tgt_file = open(params.test_input[1], encoding="utf8")
+        ans_file = open(params.test_answers, encoding="utf8")
+        output_file = open(params.alignment_output, 'w', encoding="utf8")
+        output_file2 = open(params.alignment_output + "2", 'w', encoding="utf8")
 
         while True:
             try:
@@ -200,10 +201,19 @@ def gen_align(params):
                 last_word_in_answer = get_last_greater_than(weight_added_per_word, threshold)
                 
                 ans_es = ""
+                ans_es_2 = ""
                 if first_word_in_answer != -1 and last_word_in_answer != -1:
                     min_idx = max(0, first_word_in_answer)
                     max_idx = min(len(src), last_word_in_answer+1)
                     ans_es = " ".join(src[min_idx:max_idx])
+                    
+                    num_char_start = 0
+                    num_char_end = 0
+                    for i in range(0, max_idx):
+                        if i < min_idx:
+                            num_char_start += len(src[i]) + 1
+                        num_char_end += len(src[i]) + 1
+                    ans_es_2 = str(num_char_start) + ":" + str(num_char_end)
                     #ans_es += " ".join("{:.2f}".format(x) for x in weight_added_per_word.tolist()[min_idx:max_idx])
                     #ans_es += "\n"                
                     #print(ans_es)
@@ -218,6 +228,7 @@ def gen_align(params):
                     #print("--------------------------------------------") 
                 #print("----------------")
                 output_file.write(ans_es + '\n')
+                output_file2.write(ans_es_2 + '\n')
                 
             t = time.time() - t
             print("Finished batch(%d): %.3f (%.3f sec)" % (counter, score, t))
