@@ -4,12 +4,12 @@ import random
 
 # For the corpus https://opus.nlpl.eu/download.php?f=WikiMatrix/v1/tmx/en-es.tmx.gz
 
-sentences_untokenized = open("./test.en", "r", encoding="utf-8")
-sentences_tokenized = open("./test.32k.en", "r", encoding="utf-8")
-answer_indexes_untokenized = open("./answers-indexes.en.txt", "r", encoding="utf-8")
-answer_indexes_tokenized = open("./answers-indexes.32k.en.txt", "w", encoding="utf-8")
-answer_tokenized = open("./answers.32k.en.txt", "w", encoding="utf-8")
-answer_untokenized = open("./answers.en.txt", "w", encoding="utf-8")
+sentences_untokenized = open("./test.es", "r", encoding="utf-8")
+sentences_tokenized = open("./test.32k.es", "r", encoding="utf-8")
+answer_indexes_untokenized = open("./answers-indexes.es.txt", "r", encoding="utf-8")
+answer_indexes_tokenized = open("./answers-indexes.32k.es.txt", "w", encoding="utf-8")
+answer_tokenized = open("./answers.32k.es.txt", "w", encoding="utf-8")
+answer_untokenized = open("./answers.es.txt", "w", encoding="utf-8")
 
 data1 = sentences_untokenized.readlines()
 data2 = sentences_tokenized.readlines()
@@ -41,7 +41,7 @@ for i in range(0, num_sentences):
     
     if len(ocurrences_tokenized) == 0:
         ocurrences_tokenized = list(re.finditer(pattern2, sentence_tok))
-    
+            
     match = ocurrences_tokenized[num_before]
     
     new_idx1 = match.span()[0]
