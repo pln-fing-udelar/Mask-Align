@@ -94,7 +94,7 @@ def get_token_indexes(ans_idxs, src):
             idx2 = idx
             break
 
-    return idx1, idx2
+    return idx1, idx2 + 1
     
 
 def gen_align(params):
@@ -145,13 +145,17 @@ def gen_align(params):
 
         print(f"src_file: {os.path.abspath(params.test_input[0])}\n"
               f"tgt_file: {os.path.abspath(params.test_input[1])}\n"
-              f"ans_file: {os.path.abspath(params.test_answers)}\n"
+              f"src_ans_file: {os.path.abspath(params.test_answers[0])}\n"
+              f"tgt_ans_file: {os.path.abspath(params.test_answers[1])}\n"
               f"alignment_output: {os.path.abspath(params.alignment_output)}")
 
         src_file = open(params.test_input[0], encoding="utf8")
         tgt_file = open(params.test_input[1], encoding="utf8")
-        ans_file = open(params.test_answers, encoding="utf8")
-        output_file = open(params.alignment_output, 'w', encoding="utf8")
+        
+        src_ans_file = open(params.test_answers[0], encoding="utf8")
+        tgt_ans_file = open(params.test_answers[1], encoding="utf8")        
+
+        output_file1 = open(params.alignment_output, 'w', encoding="utf8")
         output_file2 = open(params.alignment_output + "2", 'w', encoding="utf8")
 
         while True:
@@ -173,18 +177,18 @@ def gen_align(params):
             results[1] += all_cnt
             
             source_lengths, target_lengths = features["source_mask"].sum(-1).long().tolist(), features["target_mask"].sum(-1).long().tolist()
-
+            
             for weight_f, weight_b, src_len, tgt_len in zip(state['f_cross_attn'], state['b_cross_attn'], source_lengths, target_lengths):
                 src = src_file.readline().strip().split()
                 tgt = tgt_file.readline().strip().split()
-                ans = ans_file.readline().strip().split()
+                ans = tgt_ans_file.readline().strip().split()
                 
                 # if the "ans" file contains the answer in plain text, use this:
                 #answer_position = find_sub_list(ans,tgt)
                 
                 # if the "ans" file contains the position of the answer in the format idx1:idx2, use this:
-                answer_position = get_token_indexes(ans, src)
-                
+                answer_position = get_token_indexes(ans, tgt)
+                  
                 # calculate alignment scores (weight_final) for each sentence pair
                 weight_f, weight_b = weight_f.detach(), weight_b.detach()
                 weight_f, weight_b = weight_f[-1].mean(dim=0)[:tgt_len, :src_len], weight_b[-1].mean(dim=0)[:tgt_len, :src_len]
@@ -200,35 +204,31 @@ def gen_align(params):
                 first_word_in_answer = get_first_greater_than(weight_added_per_word, threshold)
                 last_word_in_answer = get_last_greater_than(weight_added_per_word, threshold)
                 
+                for i in range(0, len(src)):
+                    if i < len(weight_added_per_word):
+                        token = str(src[i])
+                        value = str(float(weight_added_per_word[i]))
+                        output_file1.write(token + " " + value + "\n")
+
                 ans_es = ""
-                ans_es_2 = ""
+                #ans_es_2 = ""
                 if first_word_in_answer != -1 and last_word_in_answer != -1:
                     min_idx = max(0, first_word_in_answer)
                     max_idx = min(len(src), last_word_in_answer+1)
+                    # Answer string
                     ans_es = " ".join(src[min_idx:max_idx])
                     
-                    num_char_start = 0
-                    num_char_end = 0
-                    for i in range(0, max_idx):
-                        if i < min_idx:
-                            num_char_start += len(src[i]) + 1
-                        num_char_end += len(src[i]) + 1
-                    ans_es_2 = str(num_char_start) + ":" + str(num_char_end)
-                    #ans_es += " ".join("{:.2f}".format(x) for x in weight_added_per_word.tolist()[min_idx:max_idx])
-                    #ans_es += "\n"                
-                    #print(ans_es)
-               # else:
-                    #print("ERROR")
-                    #print(first_word_in_answer)
-                    #print(last_word_in_answer)
-                    #print(threshold)
-                    #print(weight_added_per_word)
-                    #print(weight_b)
-                    #print(weight_f)
-                    #print("--------------------------------------------") 
-                #print("----------------")
-                output_file.write(ans_es + '\n')
-                output_file2.write(ans_es_2 + '\n')
+                    # Answer indexes
+                    #num_char_start = 0
+                    #num_char_end = 0
+                    #for i in range(0, max_idx):
+                    #    if i < min_idx:
+                    #        num_char_start += len(src[i]) + 1
+                    #    num_char_end += len(src[i]) + 1
+                    #ans_es_2 = str(num_char_start) + ":" + str(num_char_end)
+
+                output_file2.write(ans_es + '\n')
+                #output_file3.write(ans_es_2 + '\n')
                 
             t = time.time() - t
             print("Finished batch(%d): %.3f (%.3f sec)" % (counter, score, t))
