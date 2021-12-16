@@ -75,17 +75,15 @@ def get_last_greater_than(l, threshold):
             last_idx = idx
     return last_idx
     
-def get_token_indexes(ans_idxs, src):
+def get_answer_token_indexes(ans_idxs, tokens):
     idx1 = -1
     idx2 = -1
     current_char = 0
     search1 = True
 
     char_idx1, char_idx2 = int(ans_idxs[0].split(":")[0]), int(ans_idxs[0].split(":")[1])
-
     
-    for idx, tok in enumerate(src):
-        #print("-" + tok + "-" + str(len(tok)))
+    for idx, tok in enumerate(tokens):
         current_char += len(tok) + 1
         if char_idx1 < current_char and search1:
             idx1 = idx
@@ -181,13 +179,15 @@ def gen_align(params):
             for weight_f, weight_b, src_len, tgt_len in zip(state['f_cross_attn'], state['b_cross_attn'], source_lengths, target_lengths):
                 src = src_file.readline().strip().split()
                 tgt = tgt_file.readline().strip().split()
-                ans = tgt_ans_file.readline().strip().split()
+                tgt_ans = tgt_ans_file.readline().strip().split()
+                src_ans = src_ans_file.readline().strip().split()
                 
                 # if the "ans" file contains the answer in plain text, use this:
-                #answer_position = find_sub_list(ans,tgt)
+                #tgt_answer_position = find_sub_list(ans,tgt)
                 
                 # if the "ans" file contains the position of the answer in the format idx1:idx2, use this:
-                answer_position = get_token_indexes(ans, tgt)
+                tgt_answer_position = get_answer_token_indexes(tgt_ans, tgt)
+                src_answer_position = get_answer_token_indexes(src_ans, tgt)
                   
                 # calculate alignment scores (weight_final) for each sentence pair
                 weight_f, weight_b = weight_f.detach(), weight_b.detach()
@@ -195,7 +195,7 @@ def gen_align(params):
                 weight_final = 2*(weight_f * weight_b)/(weight_f + weight_b)
                 
                 # keep only relevant rows (the ones corresponding to the answer)
-                weight_final = weight_final[answer_position[0]:answer_position[1]]
+                weight_final = weight_final[tgt_answer_position[0]:tgt_answer_position[1]]
                 
                 weight_added_per_word = torch.sum(weight_final, axis=0)
 
@@ -208,7 +208,8 @@ def gen_align(params):
                     if i < len(weight_added_per_word):
                         token = str(src[i])
                         value = str(float(weight_added_per_word[i]))
-                        output_file1.write(token + " " + value + "\n")
+                        is_ans = str(i >= src_answer_position[0] and i < src_answer_position[1])
+                        output_file1.write(token + " " + value + " " + is_ans "\n")
 
                 ans_es = ""
                 #ans_es_2 = ""
