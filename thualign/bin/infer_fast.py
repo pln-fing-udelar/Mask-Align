@@ -194,10 +194,8 @@ def gen_align(params):
                 weight_f, weight_b = weight_f[-1].mean(dim=0)[:tgt_len, :src_len], weight_b[-1].mean(dim=0)[:tgt_len, :src_len]
                 weight_final = 2*(weight_f * weight_b)/(weight_f + weight_b)
                 
-                # keep only relevant rows (the ones corresponding to the answer)
-                weight_final = weight_final[tgt_answer_position[0]:tgt_answer_position[1]]
-                
-                weight_added_per_word = torch.sum(weight_final, axis=0)
+                # keep only relevant rows (the ones corresponding to the answer) and normalize
+                weight_added_per_word = weight_final[tgt_answer_position[0]:tgt_answer_position[1]].sum(dim=0) / weight_final.sum(dim=0)
 
                 threshold = 0.2
 
