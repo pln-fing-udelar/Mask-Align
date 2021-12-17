@@ -187,7 +187,7 @@ def gen_align(params):
                 
                 # if the "ans" file contains the position of the answer in the format idx1:idx2, use this:
                 tgt_answer_position = get_answer_token_indexes(tgt_ans, tgt)
-                src_answer_position = get_answer_token_indexes(src_ans, tgt)
+                src_answer_position = get_answer_token_indexes(src_ans, src)
                   
                 # calculate alignment scores (weight_final) for each sentence pair
                 weight_f, weight_b = weight_f.detach(), weight_b.detach()
@@ -209,7 +209,7 @@ def gen_align(params):
                         token = str(src[i])
                         value = str(float(weight_added_per_word[i]))
                         is_ans = str(i >= src_answer_position[0] and i < src_answer_position[1])
-                        output_file1.write(token + " " + value + " " + is_ans "\n")
+                        output_file1.write(token + " " + value + " " + is_ans + "\n")
 
                 ans_es = ""
                 #ans_es_2 = ""
