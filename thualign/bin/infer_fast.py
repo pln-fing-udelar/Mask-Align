@@ -197,7 +197,7 @@ def gen_align(params):
                 # keep only relevant rows (the ones corresponding to the answer) and normalize
                 weight_added_per_word = weight_final[tgt_answer_position[0]:tgt_answer_position[1]].sum(dim=0) / weight_final.sum(dim=0)
 
-                threshold = 0.2
+                threshold = 0.3932
 
                 first_word_in_answer = get_first_greater_than(weight_added_per_word, threshold)
                 last_word_in_answer = get_last_greater_than(weight_added_per_word, threshold)
