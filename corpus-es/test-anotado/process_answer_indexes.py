@@ -30,7 +30,6 @@ for i in range(0, num_sentences):
     #ans = re.sub(r"\(", r"\\(", ans)
     #ans = re.sub(r"\)", r"\\)", ans)
     
-    
     occurences_before = re.findall(ans, sentence_untok[:idx1])
     num_before = len(occurences_before)
         

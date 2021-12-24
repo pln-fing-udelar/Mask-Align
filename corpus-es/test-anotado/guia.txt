@@ -1,0 +1,20 @@
+Para generar los archivos test.32k.en, test.32k.es, answers.en y answers.es, que son usados por mask-align para alinear las respuestas se debe:
+
+1) Ejecutar python .\preprocess_anotated.py --> esto genera test.en, test.es, answers-indexes.en.txt y answers.en.txt, answers-indexes.es.txt, answers.es.txt
+
+2) Mover los archivos test.en y test.es al cluster
+
+2) Ejecutar en el cluster:
+
+       spm_encode --model=en.model --output_format=piece < test.en > test.32k.en
+       spm_encode --model=es.model --output_format=piece < test.es > test.32k.es
+
+
+3) Mover test.32k.en y test.32k.es de nuevo a la pc
+
+4) Ejecutar:
+
+     python process_answer_indexes.py
+     python process_answer_indexes_es.py
+
+5) Mover al cluster los archivos answers-indexes.32k.en.txt y answers-indexes.32k.es.txt
