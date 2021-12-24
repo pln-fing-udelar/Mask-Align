@@ -58,4 +58,7 @@ for idx, line in enumerate(lines):
 
 print(best_threshold)
 print(max_acc)
+
+data.close()
+data2.close()
     

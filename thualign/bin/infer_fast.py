@@ -217,14 +217,13 @@ def gen_align(params):
                     max_idx = min(len(src), last_word_in_answer+1)
                     # Answer string
                     ans_es = " ".join(src[min_idx:max_idx])
-                    
-                    #Brackets in sentence
-                    ans_es_2 = " ".join(src[:min_idx])
-                    ans_es_2 += "{{"
-                    ans_es_2 += " ".join(src[min_idx:max_idx])
-                    ans_es_2 += "}}"
-                    ans_es_2 += " ".join(src[max_idx:])
 
+                    #Brackets in sentence
+                    src.insert(max_idx, "}}")
+                    src.insert(min_idx, "{{")
+                    ans_es_2 = " ".join(src)
+                    
+                    
                 output_file2.write(ans_es + '\n')
                 output_file3.write(ans_es_2 + '\n')
                 

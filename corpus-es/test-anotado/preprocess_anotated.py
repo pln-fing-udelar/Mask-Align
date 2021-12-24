@@ -3,7 +3,7 @@ import random
 import re
 import csv
 
-csv_input = open("news-qa-questions-val.csv", "r", encoding="utf8")
+csv_input = open("news-qa-questions-test.csv", "r", encoding="utf8")
 output_src = open("test.en", "w", encoding="utf8")
 output_tgt = open("test.es", "w", encoding="utf8")
 output_ans_idx_en = open("answers-indexes.en.txt", "w", encoding="utf8")
