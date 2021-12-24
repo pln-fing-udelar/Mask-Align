@@ -155,7 +155,7 @@ def gen_align(params):
 
         output_file1 = open(params.alignment_output, 'w', encoding="utf8")
         output_file2 = open(params.alignment_output + "2", 'w', encoding="utf8")
-        output_file2 = open(params.alignment_output + "3", 'w', encoding="utf8")
+        output_file3 = open(params.alignment_output + "3", 'w', encoding="utf8")
 
         while True:
             try:
