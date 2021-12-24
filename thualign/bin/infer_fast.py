@@ -155,6 +155,7 @@ def gen_align(params):
 
         output_file1 = open(params.alignment_output, 'w', encoding="utf8")
         output_file2 = open(params.alignment_output + "2", 'w', encoding="utf8")
+        output_file2 = open(params.alignment_output + "3", 'w', encoding="utf8")
 
         while True:
             try:
@@ -217,17 +218,15 @@ def gen_align(params):
                     # Answer string
                     ans_es = " ".join(src[min_idx:max_idx])
                     
-                    # Answer indexes
-                    #num_char_start = 0
-                    #num_char_end = 0
-                    #for i in range(0, max_idx):
-                    #    if i < min_idx:
-                    #        num_char_start += len(src[i]) + 1
-                    #    num_char_end += len(src[i]) + 1
-                    #ans_es_2 = str(num_char_start) + ":" + str(num_char_end)
+                    #Brackets in sentence
+                    ans_es_2 = " ".join(src[:min_idx])
+                    ans_es_2 += "{{"
+                    ans_es_2 += " ".join(src[min_idx:max_idx])
+                    ans_es_2 += "}}"
+                    ans_es_2 += " ".join(src[max_idx:])
 
                 output_file2.write(ans_es + '\n')
-                #output_file3.write(ans_es_2 + '\n')
+                output_file3.write(ans_es_2 + '\n')
                 
             t = time.time() - t
             print("Finished batch(%d): %.3f (%.3f sec)" % (counter, score, t))
