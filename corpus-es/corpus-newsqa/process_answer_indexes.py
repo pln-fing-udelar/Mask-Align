@@ -33,14 +33,23 @@ def process_answer_indexes(sent_untok_filename, sent_tok_filename, ans_idx_untok
         idx2 = int(data3[i].split(':')[1])
         
         ans = r'{}'.format(sentence_untok[idx1:idx2])
-        #ans = re.sub(r"\(", r"\\(", ans)
-        #ans = re.sub(r"\)", r"\\)", ans)
+        ans_fixed = re.sub("\?", "\?", ans)
+        ans_fixed = re.sub("\.", "\.", ans_fixed)
+        ans_fixed = re.sub("\*", "\*", ans_fixed)
+        ans_fixed = re.sub("\+", "\+", ans_fixed)
         
-        occurences_before = re.findall(ans, sentence_untok[:idx1])
+        occurences_before = re.findall(ans_fixed, sentence_untok[:idx1])
         num_before = len(occurences_before)
             
         pattern1 = r'{}'.format("[\s▁]*".join(list(ans)))
         pattern2 = r'{}'.format("[\s▁]*".join(list(re.sub("[^\w\s]", "", ans))))
+
+        pattern1 = re.sub("\?", "\?", pattern1)
+        pattern1 = re.sub("\.", "\.", pattern1)
+        pattern1 = re.sub("\+", "\+", pattern1)
+        pattern2 = re.sub("\?", "\?", pattern2)
+        pattern2 = re.sub("\.", "\.", pattern2)
+        pattern2 = re.sub("\+", "\+", pattern2)
 
         ocurrences_tokenized = list(re.finditer(pattern1, sentence_tok))
         

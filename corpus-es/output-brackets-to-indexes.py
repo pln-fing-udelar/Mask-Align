@@ -11,16 +11,20 @@ lines = input_file.readlines()
 
 for line in lines:
     match1 = re.search("{{", line)
-    start_idx = match1.span()[0]
-    line = re.sub(r"{{", "", line)
-    
     match2 = re.search("}}", line)
-    end_idx = match2.span()[0] + 1
-    line = re.sub(r"}}", "", line)
+    if match1 and match2:
+        start_idx = match1.span()[0]
+        end_idx = match2.span()[0] - 2
+        line = re.sub(r"{{", "", line)
+        line = re.sub(r"}}", "", line)
 
-    while line[start_idx] == " ":
-        start_idx += 1
-    
-    output_file.write(str(start_idx) + ":" + str(end_idx) + "\n")
-    answer_file.write(line[start_idx:end_idx] + "\n")
-    sentence_file.write(line)
+        while line[start_idx] == " ":
+            start_idx += 1
+        
+        output_file.write(str(start_idx) + ":" + str(end_idx) + "\n")
+        answer_file.write(line[start_idx:end_idx] + "\n")
+        sentence_file.write(line)
+    else:
+        output_file.write("\n")
+        answer_file.write("\n")
+        sentence_file.write(line)
