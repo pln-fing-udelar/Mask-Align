@@ -14,10 +14,10 @@ Para generar los archivos test.32k.en, test.32k.es y answers.en, que son usados 
 
 5) Pararse en Mask-Align/ y ejecutar mask-align (bash thualign/bin/generate.sh -s spanish -o output.txt)
 
-6) El archivo output.txt tiene la respuesta marcada en la oración original con {{ y }} (tokenizado, hay que destokenizar con spm_decode)
+6) El archivo output.txt tiene la respuesta marcada en la oración original con {{ y }} (tokenizado, hay que destokenizar con spm_decode). Mask-Align/corpus-es/.
 
 7) Destokenizar output.txt:
-    spm_decode --model=corpus-es/es.model --input_format=piece < output.txt > output-plain.txt
+    spm_decode --model=es.model --input_format=piece < output.txt > output-plain.txt
 
 8) Ejecutar en el directorio donde está output-plain.txt el script:   output-brackets-to-indexes.py
 
