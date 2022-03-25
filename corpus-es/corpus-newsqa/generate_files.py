@@ -15,7 +15,7 @@ def extract_first_answer(text):
     else:
         return text
 
-csv_input = open("newsqa.csv", "r", encoding="utf8")
+csv_input = open("newsqa_filtered.csv", "r", encoding="utf8")
 csv_data = list(csv.reader(csv_input, delimiter=','))[1:]
 
 output_src = open("test.en", "w", encoding="utf8")
