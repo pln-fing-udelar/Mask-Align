@@ -3,7 +3,7 @@ import random
 import re
 import csv
 
-### This script is used to generate the following files (using the csv file newsqa.csv):
+### This script is used to generate the following files (using the csv file newsqa_filtered.csv):
 ###   - test.en, test.es:   they contain the sentences of the corpus
 ###   - answers.en.txt:   it contains the answer in plain text for each of the sentences
 ###   - answers-indexes.en.txt:   it contains the index of the answer for each of the sentences

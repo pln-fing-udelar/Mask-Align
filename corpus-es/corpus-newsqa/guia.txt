@@ -1,24 +1,30 @@
 Para generar los archivos test.32k.en, test.32k.es y answers.en, que son usados por mask-align para alinear las respuestas se debe:
 
 1) Pararse en Mask-Align/corpus-es/corpus-newsqa y ejecutar:
+	python remove_bad_rows.py --> elimina filas de preguntas sin respuesta
+
+2) Ejecutar:
         python generate_files.py --> esto genera test.en, test.es, answers-indexes.en.txt y answers.en.txt
 
 
-2) Ejecutar (habiendo instalado Google Sentencepiece):
+3) Ejecutar (habiendo instalado Google Sentencepiece):
        spm_encode --model=../en.model --output_format=piece < test.en > test.32k.en
        spm_encode --model=../es.model --output_format=piece < test.es > test.32k.es
 
-3) Ejecutar:   python process_answer_indexes.py
+4) Ejecutar:   python process_answer_indexes.py
 
-4) Copiar los archivos test.32k.en, test.32k.es y answers.en a Mask-Align/corpus-es/
+5) Copiar los archivos test.32k.en, test.32k.es y answers.en a Mask-Align/corpus-es/
 
-5) Pararse en Mask-Align/ y ejecutar mask-align (bash thualign/bin/generate.sh -s spanish -o output.txt)
+6) Pararse en Mask-Align/ y ejecutar mask-align (bash thualign/bin/generate.sh -s spanish -o output.txt)
 
-6) El archivo output.txt tiene la respuesta marcada en la oración original con {{ y }} (tokenizado, hay que destokenizar con spm_decode). Mask-Align/corpus-es/.
+7) El archivo output.txt tiene la respuesta marcada en la oración original con {{ y }} (tokenizado, hay que destokenizar con spm_decode). Mask-Align/corpus-es/.
 
-7) Destokenizar output.txt:
+8) Destokenizar output.txt:
     spm_decode --model=es.model --input_format=piece < output.txt > output-plain.txt
 
-8) Ejecutar en el directorio donde está output-plain.txt el script:   output-brackets-to-indexes.py
+9) Ejecutar en el directorio donde está output-plain.txt el script:   output-brackets-to-indexes.py
 
-El archivo que se genera, , contiene los índices de las respuestas en español
+Se generan los siguientes tres archivos:
+    - output-indexes.txt: Contine los índices de las respuestas en español
+    - output-answers.txt: Contiene las respuestas en español (en texto plano)
+    - output-sentences.txt: Contiene las oraciones en español (destokenizadas)
