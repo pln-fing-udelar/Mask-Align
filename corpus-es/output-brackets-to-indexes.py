@@ -2,11 +2,10 @@ import os
 import re
 import random
 
-
-input_file = open("./output-test.txt", "r", encoding="utf-8")
-output_file = open("./output-test-indexes.txt", "w", encoding="utf-8")
-answer_file = open("./output-test-answers.txt", "w", encoding="utf-8")
-sentence_file = open("./output-test-sentences.txt", "w", encoding="utf-8")
+input_file = open("./output.txt", "r", encoding="utf-8")
+output_file = open("./output-indexes.txt", "w", encoding="utf-8")
+answer_file = open("./output-answers.txt", "w", encoding="utf-8")
+sentence_file = open("./output-sentences.txt", "w", encoding="utf-8")
 
 lines = input_file.readlines()
 
@@ -17,7 +16,6 @@ for idx, line in enumerate(lines):
     
     if idx == 0:
         print(line)
-        
     
     match2 = re.search("}}", line)
     end_idx = match2.span()[0] + 1

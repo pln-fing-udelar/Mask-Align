@@ -3,12 +3,10 @@ import re
 import random
 
 ### This script is used to generate the following files (using the files created by the preprocess_anotated.py script): 
-###    - answers.en, answers.es:   contains the index of the answer for each sentence, after tokenizing with sentencepiece
-###    - answers.32k.en.txt, answers.32k.es.txt:   contains the answer for each sentence in plain text, after tokenizing with sentencepiece
-###    - answers.en.txt, answers.es.txt:   contains the answer for each sentence in plain text, untokenized
+###    - answers.en:   contains the index of the answer for each sentence, after tokenizing with sentencepiece
+###    - answers.32k.en.txt:   contains the answer for each sentence in plain text, after tokenizing with sentencepiece
+###    - answers.en.txt:   contains the answer for each sentence in plain text, untokenized
 
-process_answer_indexes("test.en", "test.32k.en", "answers-indexes.en.txt", "answers.en", "answers.32k.en.txt", "answers.en.txt")
-process_answer_indexes("test.es", "test.32k.es", "answers-indexes.es.txt", "answers.es", "answers.32k.es.txt", "answers.es.txt")
 
 def process_answer_indexes(sent_untok_filename, sent_tok_filename, ans_idx_untok_filename, ans_idx_tok_filename, ans_tok_filename, ans_untok_filename):
 
@@ -32,7 +30,7 @@ def process_answer_indexes(sent_untok_filename, sent_tok_filename, ans_idx_untok
         sentence_tok = sentence_tok.replace("$", r"Ç")
         
         idx1 = int(data3[i].split(':')[0])
-        idx2 = int(data3[i].split(':')[1]) - 1
+        idx2 = int(data3[i].split(':')[1])
         
         ans = r'{}'.format(sentence_untok[idx1:idx2])
         #ans = re.sub(r"\(", r"\\(", ans)
@@ -65,3 +63,6 @@ def process_answer_indexes(sent_untok_filename, sent_tok_filename, ans_idx_untok
     sentences_tokenized.close()
     answer_indexes_untokenized.close()
     answer_indexes_tokenized.close()
+
+
+process_answer_indexes("test.en", "test.32k.en", "answers-indexes.en.txt", "answers.en", "answers.32k.en.txt", "answers.en.txt")

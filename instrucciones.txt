@@ -51,7 +51,7 @@
         - El modelo queda guardado dentro de una carpeta que se crea en el directorio donde estamos parados
 
 3. Testear el modelo y generar alignments
-        - Luego de que termine de entrenar (por defecto son 50000 steps), ejecutar para testear: bash thualign/bin/test.sh -s spanish -gvt
+        - Luego de que termine de entrenar (por defecto son 50000 steps), ejecutar para testear: bash thualign/bin/generate.sh -s spanish -gvt
         - Los alignments generados están en una carpeta llamada "test" al lado de donde se guardó el modelo, en el archivo alignments.txt
         - Para ver los alignments de forma interactiva, ejecutar: python thualign/scripts/visualize.py spanish/output/test/alignment_vizdata.pt
 4. Alinear respuestas dentro de una oración

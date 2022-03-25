@@ -143,19 +143,15 @@ def gen_align(params):
 
         print(f"src_file: {os.path.abspath(params.test_input[0])}\n"
               f"tgt_file: {os.path.abspath(params.test_input[1])}\n"
-              f"src_ans_file: {os.path.abspath(params.test_answers[0])}\n"
-              f"tgt_ans_file: {os.path.abspath(params.test_answers[1])}\n"
+              f"ans_file: {os.path.abspath(params.test_answers)}\n"
               f"alignment_output: {os.path.abspath(params.alignment_output)}")
 
         src_file = open(params.test_input[0], encoding="utf8")
         tgt_file = open(params.test_input[1], encoding="utf8")
         
-        src_ans_file = open(params.test_answers[0], encoding="utf8")
-        tgt_ans_file = open(params.test_answers[1], encoding="utf8")        
+        ans_file = open(params.test_answers, encoding="utf8")
 
-        output_file1 = open(params.alignment_output, 'w', encoding="utf8")
-        output_file2 = open(params.alignment_output + "2", 'w', encoding="utf8")
-        output_file3 = open(params.alignment_output + "3", 'w', encoding="utf8")
+        output_file = open(params.alignment_output, 'w', encoding="utf8")
 
         while True:
             try:
@@ -180,15 +176,10 @@ def gen_align(params):
             for weight_f, weight_b, src_len, tgt_len in zip(state['f_cross_attn'], state['b_cross_attn'], source_lengths, target_lengths):
                 src = src_file.readline().strip().split()
                 tgt = tgt_file.readline().strip().split()
-                tgt_ans = tgt_ans_file.readline().strip().split()
-                src_ans = src_ans_file.readline().strip().split()
+                ans = ans_file.readline().strip().split()
                 
-                # if the "ans" file contains the answer in plain text, use this:
-                #tgt_answer_position = find_sub_list(ans,tgt)
-                
-                # if the "ans" file contains the position of the answer in the format idx1:idx2, use this:
-                tgt_answer_position = get_answer_token_indexes(tgt_ans, tgt)
-                src_answer_position = get_answer_token_indexes(src_ans, src)
+                # The "ans" file contains the position of the answer in the format idx1:idx2
+                answer_position = get_answer_token_indexes(ans, tgt)
                   
                 # calculate alignment scores (weight_final) for each sentence pair
                 weight_f, weight_b = weight_f.detach(), weight_b.detach()
@@ -196,36 +187,24 @@ def gen_align(params):
                 weight_final = 2*(weight_f * weight_b)/(weight_f + weight_b)
                 
                 # keep only relevant rows (the ones corresponding to the answer) and normalize
-                weight_added_per_word = weight_final[tgt_answer_position[0]:tgt_answer_position[1]].sum(dim=0) / weight_final.sum(dim=0)
+                weight_added_per_word = weight_final[answer_position[0]:answer_position[1]].sum(dim=0) / weight_final.sum(dim=0)
 
                 threshold = 0.3932
 
                 first_word_in_answer = get_first_greater_than(weight_added_per_word, threshold)
                 last_word_in_answer = get_last_greater_than(weight_added_per_word, threshold)
-                
-                for i in range(0, len(src)):
-                    if i < len(weight_added_per_word):
-                        token = str(src[i])
-                        value = str(float(weight_added_per_word[i]))
-                        is_ans = str(i >= src_answer_position[0] and i < src_answer_position[1])
-                        output_file1.write(token + " " + value + " " + is_ans + "\n")
 
-                ans_es = ""
-                #ans_es_2 = ""
+                result = ""
                 if first_word_in_answer != -1 and last_word_in_answer != -1:
                     min_idx = max(0, first_word_in_answer)
                     max_idx = min(len(src), last_word_in_answer+1)
-                    # Answer string
-                    ans_es = " ".join(src[min_idx:max_idx])
 
                     #Brackets in sentence
                     src.insert(max_idx, "}}")
                     src.insert(min_idx, "{{")
-                    ans_es_2 = " ".join(src)
+                    result = " ".join(src)
                     
-                    
-                output_file2.write(ans_es + '\n')
-                output_file3.write(ans_es_2 + '\n')
+                output_file.write(result + '\n')
                 
             t = time.time() - t
             print("Finished batch(%d): %.3f (%.3f sec)" % (counter, score, t))
