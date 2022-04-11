@@ -1,13 +1,11 @@
 name: mask-align
-channels:
-  - pytorch
 dependencies:
-  - tensorFlow=2.5.0
-  - six=1.15.0
-  - regex=2021.7.6
-  - numpy
-  - pytorch=1.8.1
-  - nltk=3.6.2
-  - cudatoolkit=10.2
-  - python=3.9
-  - sentencepiece
+  -          cudatoolkit=10.2
+  -          nltk=3.6.2
+  -          numpy
+  -          python=3.9
+  - pytorch::pytorch=1.8.1
+  -          regex=2021.7.6
+  -          sentencepiece
+  -          six=1.15.0
+  -          tensorflow=2.5.0
