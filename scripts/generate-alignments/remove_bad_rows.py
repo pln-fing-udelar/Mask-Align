@@ -21,12 +21,7 @@ def main() -> None:
                     ans_start = int(start_end_str[0])
                     ans_end = int(start_end_str[1])
 
-                if re.match(r"^(\s|\t|\n|\r)*$", str(row[0])) is None \
-                        and re.match(r"^(\s|\t|\n|\r)*$", str(row[1])) is None \
-                        and re.match(r"^(\s|\t|\n|\r)*$", str(row[2])) is None \
-                        and re.match(r"^(\s|\t|\n|\r)*$", str(row[3])) is None \
-                        and re.match(r"^(\s|\t|\n|\r)*$", str(row[4])) is None \
-                        and re.match(r"^(\s|\t|\n|\r)*$", str(row[5])) is None \
+                if any(re.match(r"^(\s|\t|\n|\r)*$", str(row[j])) for j in range(6)) is None \
                         and "*" not in str(row[2]) \
                         and "Ã" not in str(row[3]) \
                         and i not in {33677, 33676, 116925, 116926} \

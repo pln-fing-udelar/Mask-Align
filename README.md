@@ -27,7 +27,7 @@ TODO: provide a pretrained model.
 
 Follow these steps to train a Mask-Align model to align translations between English and Spanish.
 
-### Prepare the corpus
+### Prepare the Corpus
 
 1. Download the [Europarl Spanish-English parallel corpus](https://www.statmt.org/europarl/v7/es-en.tgz).
 2. Remove the sentences that don't form a pair (the sentences that correspond with an empty line).
@@ -55,7 +55,7 @@ Follow these steps to train a Mask-Align model to align translations between Eng
   sed -i -e 's/<s>/<eos>/' -e 's/<s\/>/<pad>/' test.32k.es
   ```
 
-### Train the model
+### Train the Model
 
 Note you need a computer with a CUDA-capable GPU to train the model.
 
@@ -98,6 +98,28 @@ Note you need a computer with a CUDA-capable GPU to train the model.
    ./thualign/scripts/visualize.py spanish/output/test/alignment_vizdata.pt
    ```
 
-## Generating the answer alignments
+## Generating the Answer Alignments for NewsQA-es
 
-TODO
+Run these commands to generate the answer alignments for the NewsQA-es dataset. You should have a trained Mask-Align 
+model and the `newsqa.csv` file.
+
+```bash
+./scripts/generate-alignments/remove_bad_rows.py
+./scripts/generate-alignments/generate_files.py
+spm_encode --model=en.model --output_format=piece < test.en > test.32k.en  
+spm_encode --model=es.model --output_format=piece < test.es > test.32k.es
+./scripts/generate-alignments/process_answer_indexes.py
+mkdir corpus-es
+mv test.32k.en test.32k.es answers.en corpus-es/
+./thualign/bin/generate.sh -s spanish -o output.txt
+spm_decode --model=es.model --input_format=piece < output.txt > output-plain.txt
+./scripts/generate-alignments/output_brackets_to_indexes.py
+```
+
+The following three files are generated:  
+
+* `output-indexes.txt`: the indexes of the answers in Spanish.  
+* `output-answers.txt`: the answers in Spanish (in plain text).  
+* `output-sentences.txt`: the sentences in Spanish (not tokenized).
+
+TODO: how to get the final merged CSV file?
