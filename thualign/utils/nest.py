@@ -1,18 +1,13 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 # Modified from TensorFlow
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import collections
-import six
 
 
 def _sorted(dict_):
     try:
-        return sorted(six.iterkeys(dict_))
+        return sorted(dict_.keys())
     except TypeError:
         raise TypeError("nest only supports dicts with sortable keys.")
 
@@ -21,11 +16,11 @@ def _sequence_like(instance, args):
     if isinstance(instance, dict):
         result = dict(zip(_sorted(instance), args))
         return type(instance)((key, result[key])
-                              for key in six.iterkeys(instance))
+                              for key in instance.keys())
     elif (isinstance(instance, tuple) and
           hasattr(instance, "_fields") and
           isinstance(instance._fields, collections.Sequence) and
-          all(isinstance(f, six.string_types) for f in instance._fields)):
+          all(isinstance(f, str) for f in instance._fields)):
         # This is a namedtuple
         return type(instance)(*args)
     else:
@@ -38,15 +33,13 @@ def _yield_value(iterable):
         for key in _sorted(iterable):
             yield iterable[key]
     else:
-        for value in iterable:
-            yield value
+        yield from iterable
 
 
 def _yield_flat_nest(nest):
     for n in _yield_value(nest):
         if is_sequence(n):
-            for ni in _yield_flat_nest(n):
-                yield ni
+            yield from _yield_flat_nest(n)
         else:
             yield n
 
@@ -58,7 +51,7 @@ def is_sequence(seq):
         print("Sets are not currently considered sequences, but this may "
               "change in the future, so consider avoiding using them.")
     return (isinstance(seq, collections.Sequence)
-            and not isinstance(seq, six.string_types))
+            and not isinstance(seq, str))
 
 
 def flatten(nest):
@@ -117,7 +110,7 @@ def flatten_dict_items(dictionary):
     if not isinstance(dictionary, dict):
         raise TypeError("input must be a dictionary")
     flat_dictionary = {}
-    for i, v in six.iteritems(dictionary):
+    for i, v in dictionary.items():
         if not is_sequence(i):
             if i in flat_dictionary:
                 raise ValueError(

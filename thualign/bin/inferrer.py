@@ -1,27 +1,20 @@
 #!/usr/bin/env python
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import os
-import glob
-import time
-import socket
-import string
-import shutil
 import argparse
+import glob
+import os
+import shutil
+import socket
 import subprocess
-import numpy as np
+import time
+
+import torch
+import torch.distributed as dist
+
 import thualign.data as data
 import thualign.models as models
 import thualign.utils as utils
 import thualign.utils.alignment as alignment_utils
-
-import torch
-import torch.distributed as dist
 
 
 def parse_args():
@@ -47,10 +40,11 @@ def parse_args():
 
 def load_vocabulary(params):
     params.vocabulary = {
-        "source": data.Vocabulary(params.vocab[0]), 
+        "source": data.Vocabulary(params.vocab[0]),
         "target": data.Vocabulary(params.vocab[1])
     }
     return params
+
 
 def to_cuda(features):
     for key in features:
@@ -58,10 +52,11 @@ def to_cuda(features):
 
     return features
 
+
 def gen_weights(params):
     """Generate attention weights 
     """
-    
+
     with socket.socket() as s:
         s.bind(("localhost", 0))
         port = s.getsockname()[1]
@@ -99,9 +94,9 @@ def gen_weights(params):
 
         if params.half:
             model = model.half()
-        
+
         model.eval()
-        print('loading checkpoint: {}'.format(checkpoint))
+        print(f'loading checkpoint: {checkpoint}')
         state = torch.load(checkpoint, map_location="cpu")
         model.load_state_dict(state["model"])
 
@@ -117,7 +112,7 @@ def gen_weights(params):
 
         # Buffers for synchronization
         results = [0., 0.]
-        
+
         decoder_cross_attn = []
         decoder_self_attn = []
         encoder_self_attn = []
@@ -150,8 +145,9 @@ def gen_weights(params):
 
             results[0] += acc_cnt
             results[1] += all_cnt
-            
-            source_lengths, target_lengths = features["source_mask"].sum(-1).long().tolist(), features["target_mask"].sum(-1).long().tolist()
+
+            source_lengths, target_lengths = features["source_mask"].sum(-1).long().tolist(), features[
+                "target_mask"].sum(-1).long().tolist()
             for weight, src_len, tgt_len in zip(state['decoder_attn'], source_lengths, target_lengths):
                 decoder_cross_attn.append(weight[:, :, :tgt_len, :src_len])
 
@@ -174,7 +170,7 @@ def gen_weights(params):
             if 'b_cross_attn' in state:
                 for weight, src_len, tgt_len in zip(state['b_cross_attn'], source_lengths, target_lengths):
                     b_cross_attn.append(weight[:, :, :tgt_len, :src_len])
-            
+
             if require_pred and 'pred' in state:
                 for pred_t, tgt_len in zip(state['pred'], target_lengths):
                     pred_t = pred_t[:tgt_len].cpu().tolist()
@@ -199,7 +195,7 @@ def gen_weights(params):
 
         score = 0.0 if results[1] == 0 else results[0] / results[1]
         fout = open(os.path.join(test_path, 'eval_res.txt'), 'w')
-        fout.write("========= %s =========\nacc_rate: %f" % (test_path, score) + '\n')
+        fout.write(f"========= {test_path} =========\nacc_rate: {score:f}" + '\n')
         print("acc_rate: %f" % (score))
 
 
@@ -215,7 +211,7 @@ def gen_align(params):
         has_refs = True
     except:
         has_refs = False
-        
+
     weight_path = getattr(params, 'weight_path', None) or params.test_path
     output_path = getattr(params, 'output_path', None) or weight_path
 
@@ -226,7 +222,7 @@ def gen_align(params):
         # bidirectional
         # alignment_layer = ['f', 'b', 'gdf', 'soft']
         alignment_layer = ['soft']
-        hyps = {} # forward, backward, gdf, soft-extraction
+        hyps = {}  # forward, backward, gdf, soft-extraction
         for k in alignment_layer:
             hyps[k] = []
         f_weights = torch.load(os.path.join(weight_path, 'f_cross_attn.pt'), map_location='cpu')
@@ -238,12 +234,12 @@ def gen_align(params):
 
             if params.gen_vizdata:
                 # for alignment visualization
-                src_t, tgt_t =  src_i, tgt_i
+                src_t, tgt_t = src_i, tgt_i
                 data_t = {
-                'src': src_t, 
-                'tgt': tgt_t,
-                'weights': {},
-                'metrics': {}
+                    'src': src_t,
+                    'tgt': tgt_t,
+                    'weights': {},
+                    'metrics': {}
                 }
                 if has_refs:
                     ref_t, pos_t = refs[i], poss[i]
@@ -276,21 +272,22 @@ def gen_align(params):
 
             if 'soft' in alignment_layer:
                 # soft extraction
-                align_soft, weight_final = alignment_utils.bidir_weights_to_align(weight_f, weight_b, src_i, tgt_i, **extract_params)
+                align_soft, weight_final = alignment_utils.bidir_weights_to_align(weight_f, weight_b, src_i, tgt_i,
+                                                                                  **extract_params)
                 hyps['soft'].append(align_soft)
 
             if params.gen_vizdata:
                 if 'f' in alignment_layer:
                     # hard forward extraction
                     weights_align_f = alignment_utils.align_to_weights(align_f, align_f, src_t, tgt_t)
-                    data_t['weights'][label+'_f'] = weight_f
-                    data_t['weights'][label+'_f.hard'] = weights_align_f
+                    data_t['weights'][label + '_f'] = weight_f
+                    data_t['weights'][label + '_f.hard'] = weights_align_f
 
                 if 'b' in alignment_layer:
                     # hard backward extraction
                     weights_align_b = alignment_utils.align_to_weights(align_b, align_b, src_t, tgt_t)
-                    data_t['weights'][label+'_b'] = weight_b
-                    data_t['weights'][label+'_b.hard'] = weights_align_b
+                    data_t['weights'][label + '_b'] = weight_b
+                    data_t['weights'][label + '_b.hard'] = weights_align_b
 
                 if 'gdf' in alignment_layer:
                     # gdf
@@ -300,14 +297,14 @@ def gen_align(params):
                 if 'soft' in alignment_layer:
                     # soft extraction
                     weights_align_soft = alignment_utils.align_to_weights(align_soft, align_soft, src_t, tgt_t)
-                    data_t['weights'][label+'.hard'] = weights_align_soft
-                    data_t['weights'][label+'_final'] = weight_final
-                
+                    data_t['weights'][label + '.hard'] = weights_align_soft
+                    data_t['weights'][label + '_final'] = weight_final
+
                 if has_refs:
                     if 'f' in alignment_layer:
-                        data_t['metrics'][label+'_f'] = alignment_utils.alignment_metrics([align_f], [ref_t], [pos_t])
+                        data_t['metrics'][label + '_f'] = alignment_utils.alignment_metrics([align_f], [ref_t], [pos_t])
                     if 'b' in alignment_layer:
-                        data_t['metrics'][label+'_b'] = alignment_utils.alignment_metrics([align_b], [ref_t], [pos_t])
+                        data_t['metrics'][label + '_b'] = alignment_utils.alignment_metrics([align_b], [ref_t], [pos_t])
                     if 'gdf' in alignment_layer:
                         data_t['metrics']['gdf'] = alignment_utils.alignment_metrics([align_gdf], [ref_t], [pos_t])
                     if 'soft' in alignment_layer:
@@ -326,7 +323,7 @@ def gen_align(params):
 
             if params.gen_vizdata:
                 # for alignment visualization
-                src_t, tgt_t =  src_i, tgt_i
+                src_t, tgt_t = src_i, tgt_i
                 if getattr(params, "data_reverse", False):
                     src_t, tgt_t = tgt_t, src_t
                 if getattr(params, "src_eos", False) or getattr(params, "tgt_eos", False):
@@ -337,7 +334,7 @@ def gen_align(params):
                     tgt_t = tgt_t + [eos_tok]
 
                 data_t = {
-                    'src': src_t, 
+                    'src': src_t,
                     'tgt': tgt_t,
                     'weights': {},
                     'metrics': {}
@@ -354,19 +351,19 @@ def gen_align(params):
                     label = params.label
                 else:
                     label = params.label + '_' + str(l)
-                weight = torch.mean(weight_i[l], dim=0) # ny x nx
+                weight = torch.mean(weight_i[l], dim=0)  # ny x nx
                 align = alignment_utils.weights_to_align(weight, src_i, tgt_i, **extract_params)
                 if getattr(params, "data_reverse", False):
                     align = align.invert()
                     weight = weight.transpose(-1, -2)
                     label = label + '_r'
                 hyps[j].append(align)
-                
+
                 if params.gen_vizdata:
                     # weight and alignment visualization
                     weights_align = alignment_utils.align_to_weights(align, align, src_t, tgt_t)
                     data_t['weights'][label] = weight
-                    data_t['weights'][label+'.hard'] = weights_align
+                    data_t['weights'][label + '.hard'] = weights_align
                     if hasattr(params, 'test_ref'):
                         metric = alignment_utils.alignment_metrics([align], [ref_t], [pos_t])
                         data_t['metrics'][label] = metric
@@ -382,16 +379,18 @@ def gen_align(params):
         for l in alignment_layer:
             hyp = hyps[l]
             a, p, r = alignment_utils.alignment_metrics(hyp, refs, poss)
-            output_name = os.path.join(output_path, 'alignment-{}.txt'.format(l))
+            output_name = os.path.join(output_path, f'alignment-{l}.txt')
             align_out = open(output_name, 'w')
             for align in hyp:
                 align_out.write(str(align) + '\n')
-            print('{}: {:.1f}% ({:.1f}%/{:.1f}%/{})'.format(output_name, a*100, p*100, r*100, sum([len(x) for x in hyp])))
-            fout.write('{}: {:.1f}% ({:.1f}%/{:.1f}%/{})'.format(output_name, a*100, p*100, r*100, sum([len(x) for x in hyp])) + '\n')
+            print('{}: {:.1f}% ({:.1f}%/{:.1f}%/{})'.format(output_name, a * 100, p * 100, r * 100,
+                                                            sum(len(x) for x in hyp)))
+            fout.write('{}: {:.1f}% ({:.1f}%/{:.1f}%/{})'.format(output_name, a * 100, p * 100, r * 100,
+                                                                 sum(len(x) for x in hyp)) + '\n')
             scores[l] = a
         fout.write('\n')
         fout.close()
-    
+
         # write down best alignment
         min_key = min(scores, key=scores.get)
         output_name = os.path.join(output_path, 'alignment.txt')
@@ -412,6 +411,7 @@ def gen_align(params):
             for align in hyps[k]:
                 align_out.write(str(align) + '\n')
 
+
 def merge_dict(src, tgt, keep_common=True):
     res = {}
     for k, v in src.items():
@@ -425,6 +425,7 @@ def merge_dict(src, tgt, keep_common=True):
             res[src_k] = res.pop(k)
             res[tgt_k] = v
     return res
+
 
 def merge(forward_vizdata, backward_vizdata, bialigns):
     res = []
@@ -446,18 +447,20 @@ def merge(forward_vizdata, backward_vizdata, bialigns):
         res.append(res_t)
     return res
 
+
 def main(args):
     exps = args.exp.split(',')
     exp_params = []
 
     for exp in exps:
-        params = utils.Config.read(args.config, base=args.base_config, data=args.data_config, model=args.model_config, exp=exp)
+        params = utils.Config.read(args.config, base=args.base_config, data=args.data_config, model=args.model_config,
+                                   exp=exp)
         exp_params.append(params)
-        
+
         base_dir = params.output
         test_path = os.path.join(base_dir, "test")
         params.test_path = test_path
-        
+
         params.gen_weights = args.gen_weights
         params.gen_vizdata = args.gen_vizdata
         params.test_aer = args.test_aer
@@ -480,11 +483,12 @@ def main(args):
         output_alignment_file = os.path.join(common_path, 'alignment.txt')
 
         # combine bidirectional alignments
-        completedProcess = subprocess.run('python {script} {alignments} --dont_reverse --method grow-diagonal > {output}'.format(
-            script=thualign.scripts.combine_bidirectional_alignments.__file__,
-            alignments=' '.join([os.path.join(test_path, 'alignment.txt') for test_path in test_paths]),
-            output=output_alignment_file
-        ), shell=True)
+        completedProcess = subprocess.run(
+            'python {script} {alignments} --dont_reverse --method grow-diagonal > {output}'.format(
+                script=thualign.scripts.combine_bidirectional_alignments.__file__,
+                alignments=' '.join([os.path.join(test_path, 'alignment.txt') for test_path in test_paths]),
+                output=output_alignment_file
+            ), shell=True)
 
         # calculate aer for combined alignments
         completedProcess = subprocess.run('python {script} {ref} {alignment} > {aer_res}'.format(
@@ -502,15 +506,17 @@ def main(args):
             merge_data_flag = merge_data_flag and os.path.exists(vizdata_file)
 
         if merge_data_flag:
-            forward_vizdata = torch.load(vizdata_files[0], map_location='cpu') # list of ['src', 'tgt', 'ref', 'weights', 'metrics']
-            backward_vizdata = torch.load(vizdata_files[1], map_location='cpu') # list of ['src', 'tgt', 'ref', 'weights', 'metrics']
+            forward_vizdata = torch.load(vizdata_files[0],
+                                         map_location='cpu')  # list of ['src', 'tgt', 'ref', 'weights', 'metrics']
+            backward_vizdata = torch.load(vizdata_files[1],
+                                          map_location='cpu')  # list of ['src', 'tgt', 'ref', 'weights', 'metrics']
             bialigns = [alignment_utils.parse_ref(line.strip())[0] for line in open(output_alignment_file)]
             merged_vizdata = merge(forward_vizdata, backward_vizdata, bialigns)
             torch.save(merged_vizdata, os.path.join(common_path, 'alignment_vizdata.pt'))
-            
 
     if len(exps) > 2:
         print('More than two experiments are not supported! No merging action will be performed.')
+
 
 if __name__ == "__main__":
     main(parse_args())

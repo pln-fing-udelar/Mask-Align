@@ -1,15 +1,10 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import math
-import torch
-import tensorflow as tf
 
 from collections import namedtuple
+
+import torch
+
 from thualign.utils.nest import map_structure
 
 
@@ -106,7 +101,7 @@ def _beam_search_step(time, func, state, batch_size, beam_size, alpha,
     # [batch_size, beam_size * vocab_size]
     curr_scores = torch.reshape(curr_scores, [-1, beam_size * vocab_size])
     # [batch_size, 2 * beam_size]
-    top_scores, top_indices = torch.topk(curr_scores, k=2*beam_size)
+    top_scores, top_indices = torch.topk(curr_scores, k=2 * beam_size)
     # Shape: [batch_size, 2 * beam_size]
     beam_indices = top_indices // vocab_size
     symbol_indices = top_indices % vocab_size
@@ -207,7 +202,7 @@ def beam_search(models, features, params):
     features["source_mask"] = torch.unsqueeze(features["source_mask"], 1)
     features["source_mask"] = features["source_mask"].repeat([1, beam_size, 1])
     features["source_mask"] = torch.reshape(features["source_mask"],
-                                       [batch_size * beam_size, seq_length])
+                                            [batch_size * beam_size, seq_length])
 
     decoding_fn = _get_inference_fn(funcs, features)
 

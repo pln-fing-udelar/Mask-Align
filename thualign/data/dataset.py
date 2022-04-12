@@ -1,25 +1,22 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
-
 import abc
-import torch
+from typing import Any, Callable, NoReturn, Union
 
-from collections.abc import Sequence
 from torch.utils.data import IterableDataset
+
 from thualign.data.iterator import Iterator
 from thualign.data.vocab import Vocabulary
 from thualign.tokenizers import Tokenizer
-from typing import Any, Dict, NoReturn, List, Tuple, Union, Callable
 
 
-class ElementSpec(object):
+class ElementSpec:
 
     def __init__(self, elem_type, shape):
         self._type = elem_type
         self._shape = shape
 
     def __repr__(self) -> str:
-        return "%s, %s" % (self._type, self._shape)
+        return f"{self._type}, {self._shape}"
 
     @property
     def elem_type(self) -> Any:
@@ -30,7 +27,7 @@ class ElementSpec(object):
         return self._shape
 
 
-class MapFunc(object):
+class MapFunc:
 
     def __init__(self, fn: Callable, spec: ElementSpec):
         self._fn = fn
@@ -91,7 +88,7 @@ class Dataset(IterableDataset):
         return ShardDataset(self, num_shards, index)
 
     @abc.abstractmethod
-    def set_inputs(self, datasets: Tuple["Dataset"]) -> NoReturn:
+    def set_inputs(self, datasets: tuple["Dataset"]) -> NoReturn:
         raise NotImplementedError("Dataset.set_inputs not implemented.")
 
     def tokenize(self, tokenizer: Tokenizer, bos: bytes = b"<bos>",
@@ -100,8 +97,8 @@ class Dataset(IterableDataset):
 
     @staticmethod
     def bucket_by_sequence_length(dataset: "Dataset",
-                                  bucket_boundaries: List[int],
-                                  batch_sizes: List[int],
+                                  bucket_boundaries: list[int],
+                                  batch_sizes: list[int],
                                   pad: int = 0,
                                   min_length: int = -1,
                                   max_length: int = 10000) -> "BucketDataset":
@@ -109,11 +106,11 @@ class Dataset(IterableDataset):
                              min_length, max_length)
 
     @staticmethod
-    def lookup(dataset: "Dataset", vocabulary: Dict[bytes, int], unk_id):
+    def lookup(dataset: "Dataset", vocabulary: dict[bytes, int], unk_id):
         return LookupDataset(dataset, vocabulary, unk_id)
 
     @staticmethod
-    def zip(datasets: Tuple["Dataset"]) -> "ZipDataset":
+    def zip(datasets: tuple["Dataset"]) -> "ZipDataset":
         return ZipDataset(datasets)
 
 
@@ -128,7 +125,7 @@ class BackgroundDataset(Dataset):
     def __init__(self, dataset: Dataset):
         self._dataset = dataset
 
-        super(BackgroundDataset, self).__init__()
+        super().__init__()
 
     def __repr__(self) -> str:
         return "<BackgroundDataset:%s>" % self._dataset
@@ -147,8 +144,8 @@ class BackgroundDataset(Dataset):
 
 class BucketDataset(Dataset):
 
-    def __init__(self, dataset: Dataset, bucket_boundaries : List[int],
-                 batch_sizes: List[int], pad: int = 0, min_length: int = -1,
+    def __init__(self, dataset: Dataset, bucket_boundaries: list[int],
+                 batch_sizes: list[int], pad: int = 0, min_length: int = -1,
                  max_length: int = 10000):
         if not self._check_type(dataset.element_spec):
             raise ValueError("The input dataset must produces an example of "
@@ -163,14 +160,14 @@ class BucketDataset(Dataset):
 
         _elem_spec = self._dataset.element_spec
 
-        if _elem_spec.elem_type is List[int]:
-            _elem_type = List[List[int]]
+        if _elem_spec.elem_type is list[int]:
+            _elem_type = list[list[int]]
             _elem_shape = "[None, None]"
         else:
             # Tuple[List[int], ...] -> Tuple[List[List[int]], ...]
             args = _elem_spec.elem_type.__args__
-            args = [List[t] for t in args]
-            _elem_type = Tuple[tuple(args)]
+            args = [list[t] for t in args]
+            _elem_type = tuple[tuple(args)]
             _elem_shape = ",".join(["[None, None]" for _ in args])
 
             if len(args) == 1:
@@ -180,19 +177,19 @@ class BucketDataset(Dataset):
 
         self._spec = ElementSpec(_elem_type, _elem_shape)
 
-        super(BucketDataset, self).__init__()
+        super().__init__()
 
     def __repr__(self) -> str:
         return "<BucketDataset:%s>" % self._dataset
 
-    def _inputs(self) -> List[Dataset]:
+    def _inputs(self) -> list[Dataset]:
         return [self._dataset]
 
     def _check_type(self, elem_spec) -> bool:
-        if elem_spec.elem_type is List[int]:
+        if elem_spec.elem_type is list[int]:
             return True
         elif not isinstance(elem_spec.elem_type,
-                            type(Tuple[List[int], ...])):
+                            type(tuple[list[int], ...])):
             return False
         else:
             args = elem_spec.elem_type.__args__
@@ -201,7 +198,7 @@ class BucketDataset(Dataset):
                 return False
 
             for t in args:
-                if t is not List[int]:
+                if t is not list[int]:
                     return False
 
             return True
@@ -215,11 +212,11 @@ class BucketDataset(Dataset):
         return "BucketDataset"
 
     @property
-    def bucket_boundaries(self) -> List[int]:
+    def bucket_boundaries(self) -> list[int]:
         return self._bucket_boundaries
 
     @property
-    def batch_sizes(self) -> List[int]:
+    def batch_sizes(self) -> list[int]:
         return self._batch_sizes
 
     @property
@@ -238,7 +235,7 @@ class BucketDataset(Dataset):
     def element_spec(self) -> ElementSpec:
         return self._spec
 
-    def set_inputs(self, datasets: Tuple[Dataset]) -> None:
+    def set_inputs(self, datasets: tuple[Dataset]) -> None:
         if len(datasets) != 1:
             raise ValueError("``datasets'' must be a tuple with one dataset.")
 
@@ -252,14 +249,14 @@ class BucketDataset(Dataset):
 
         _elem_spec = self._dataset.element_spec
 
-        if _elem_spec.elem_type is List[int]:
-            _elem_type = List[List[int]]
+        if _elem_spec.elem_type is list[int]:
+            _elem_type = list[list[int]]
             _elem_shape = "[None, None]"
         else:
             # Tuple[List[int], ...] -> Tuple[List[List[int]], ...]
             args = _elem_spec.elem_type.__args__
-            args = [List[t] for t in args]
-            _elem_type = Tuple[tuple(args)]
+            args = [list[t] for t in args]
+            _elem_type = tuple[tuple(args)]
             _elem_shape = ",".join(["[None, None]" for _ in args])
 
             if len(args) == 1:
@@ -273,20 +270,20 @@ class BucketDataset(Dataset):
 class LookupDataset(Dataset):
 
     def __init__(self, dataset: Dataset, vocabulary: Vocabulary,
-                 unk_id : int = -1):
-        if dataset.element_spec.elem_type is not List[bytes]:
+                 unk_id: int = -1):
+        if dataset.element_spec.elem_type is not list[bytes]:
             raise ValueError("The input dataset must produces an example of "
                              "`List[bytes]`.")
         self._dataset = dataset
         self._vocab = vocabulary
         self._unk_id = unk_id
-        self._spec = ElementSpec(List[int], "[None]")
-        super(LookupDataset, self).__init__()
+        self._spec = ElementSpec(list[int], "[None]")
+        super().__init__()
 
     def __repr__(self) -> str:
         return "<LookupDataset:%s>" % self._dataset
 
-    def _inputs(self) -> List[Dataset]:
+    def _inputs(self) -> list[Dataset]:
         return [self._dataset]
 
     def copy(self) -> "LookupDataset":
@@ -308,7 +305,7 @@ class LookupDataset(Dataset):
     def element_spec(self) -> ElementSpec:
         return self._spec
 
-    def set_inputs(self, datasets: Tuple[Dataset]) -> None:
+    def set_inputs(self, datasets: tuple[Dataset]) -> None:
         if len(datasets) != 1:
             raise ValueError("``datasets'' must be a tuple with one dataset.")
 
@@ -325,7 +322,7 @@ class MapDataset(Dataset):
         self._fn = fn
         self._spec = fn.element_spec
 
-        super(MapDataset, self).__init__()
+        super().__init__()
 
     def __repr__(self) -> str:
         return "<MapDataset:%s>" % str(self._dataset)
@@ -351,14 +348,14 @@ class PaddedBatchDataset(Dataset):
 
         _elem_spec = self._dataset.element_spec
 
-        if _elem_spec.elem_type is List[int]:
-            _elem_type = List[List[int]]
+        if _elem_spec.elem_type is list[int]:
+            _elem_type = list[list[int]]
             _elem_shape = "[None, None]"
         else:
             # Tuple[List[int], ...] -> Tuple[List[List[int]], ...]
             args = _elem_spec.elem_type.__args__
-            args = [List[t] for t in args]
-            _elem_type = Tuple[tuple(args)]
+            args = [list[t] for t in args]
+            _elem_type = tuple[tuple(args)]
             _elem_shape = ",".join(["[None, None]" for _ in args])
 
             if len(args) == 1:
@@ -368,12 +365,12 @@ class PaddedBatchDataset(Dataset):
 
         self._spec = ElementSpec(_elem_type, _elem_shape)
 
-        super(PaddedBatchDataset, self).__init__()
+        super().__init__()
 
     def __repr__(self) -> str:
         return "<PaddedDataset:%s>" % str(self._dataset)
 
-    def _inputs(self) -> List[Dataset]:
+    def _inputs(self) -> list[Dataset]:
         return [self._dataset]
 
     def copy(self) -> "PaddedDataset":
@@ -402,12 +399,12 @@ class RepeatDataset(Dataset):
     def __init__(self, dataset: Dataset, count: int = None):
         self._dataset = dataset
         self._count = -1 if count is None else count
-        super(RepeatDataset, self).__init__()
+        super().__init__()
 
     def __repr__(self) -> str:
         return "<RepeatDataset:%s,%d>" % (self._dataset, self._count)
 
-    def _inputs(self) -> List[Dataset]:
+    def _inputs(self) -> list[Dataset]:
         return [self._dataset]
 
     def copy(self) -> "RepeatDataset":
@@ -425,7 +422,7 @@ class RepeatDataset(Dataset):
     def element_spec(self) -> ElementSpec:
         self._dataset.element_spec
 
-    def set_inputs(self, datasets: Tuple[Dataset]) -> None:
+    def set_inputs(self, datasets: tuple[Dataset]) -> None:
         if len(datasets) != 1:
             raise ValueError("``datasets'' must be a tuple with one dataset.")
 
@@ -434,17 +431,17 @@ class RepeatDataset(Dataset):
 
 class ShardDataset(Dataset):
 
-    def __init__(self, dataset: Dataset, num_shards : int, index : int):
+    def __init__(self, dataset: Dataset, num_shards: int, index: int):
         self._dataset = dataset
         self._num_shards = num_shards
         self._index = index
-        super(ShardDataset, self).__init__()
+        super().__init__()
 
     def __repr__(self) -> str:
         info = (self._dataset, self._num_shards, self._index)
         return "<ShardDataset:%s,%d,%d>" % info
 
-    def _inputs(self) -> List[Dataset]:
+    def _inputs(self) -> list[Dataset]:
         return [self._dataset]
 
     def copy(self) -> "ShardDataset":
@@ -467,7 +464,7 @@ class ShardDataset(Dataset):
     def element_spec(self) -> ElementSpec:
         return self._dataset.element_spec
 
-    def set_inputs(self, datasets: Tuple[Dataset]) -> None:
+    def set_inputs(self, datasets: tuple[Dataset]) -> None:
         if len(datasets) != 1:
             raise ValueError("``datasets'' must be a tuple with one dataset.")
 
@@ -476,13 +473,13 @@ class ShardDataset(Dataset):
 
 class TextLineDataset(DatasetSource):
 
-    def __init__(self, buffer_or_filename: Union[List, str],
-                 num_shards: int = 1, index : int = 0):
+    def __init__(self, buffer_or_filename: Union[list, str],
+                 num_shards: int = 1, index: int = 0):
         self._index = index
         self._num_shards = num_shards
         self._source = buffer_or_filename
         self._spec = ElementSpec(bytes, "[]")
-        super(TextLineDataset, self).__init__()
+        super().__init__()
 
     def __repr__(self) -> str:
         return "<TextLineDataset:%s>" % self._source
@@ -503,14 +500,14 @@ class TextLineDataset(DatasetSource):
         return self._index
 
     @property
-    def input_source(self) -> Union[List, str]:
+    def input_source(self) -> Union[list, str]:
         return self._source
 
     @property
     def element_spec(self) -> ElementSpec:
         return self._spec
 
-    def set_inputs(self, datasets: Tuple[Dataset]) -> None:
+    def set_inputs(self, datasets: tuple[Dataset]) -> None:
         return None
 
 
@@ -522,19 +519,19 @@ class TokenizedLineDataset(Dataset):
 
         if elem_spec.elem_type is not bytes or elem_spec.shape != "[]":
             raise ValueError("TokenizedLineDataset only accepts a dataset with"
-                              " ElementSpec(bytes, '[None]')")
+                             " ElementSpec(bytes, '[None]')")
 
         self._dataset = dataset
         self._tokenizer = tokenizer
         self._bos = bos
         self._eos = eos
-        self._spec = ElementSpec(List[bytes], "[None]")
-        super(TokenizedLineDataset, self).__init__()
+        self._spec = ElementSpec(list[bytes], "[None]")
+        super().__init__()
 
     def __repr__(self) -> str:
         return "<TokenizedLineDataset:%s>" % self._dataset
 
-    def _inputs(self) -> List[Dataset]:
+    def _inputs(self) -> list[Dataset]:
         return [self._dataset]
 
     def copy(self) -> "TokenizedLineDataset":
@@ -561,7 +558,7 @@ class TokenizedLineDataset(Dataset):
     def eos(self) -> bytes:
         return self._eos
 
-    def set_inputs(self, datasets: Tuple[Dataset]) -> None:
+    def set_inputs(self, datasets: tuple[Dataset]) -> None:
         if len(datasets) != 1:
             raise ValueError("``datasets'' must be a tuple with one dataset.")
 
@@ -570,7 +567,7 @@ class TokenizedLineDataset(Dataset):
 
 class ZipDataset(Dataset):
 
-    def __init__(self, datasets: Tuple[Dataset]):
+    def __init__(self, datasets: tuple[Dataset]):
         if not isinstance(datasets, tuple):
             raise ValueError("ZipDataset expects a tuple of datasets as "
                              "the input.")
@@ -579,7 +576,7 @@ class ZipDataset(Dataset):
         self._num_inputs = len(datasets)
 
         _type = tuple(dataset.element_spec.elem_type for dataset in datasets)
-        _type = Tuple[_type]
+        _type = tuple[_type]
         _shape = ",".join([dataset.element_spec.shape for dataset in datasets])
 
         if len(self._datasets) == 1:
@@ -589,7 +586,7 @@ class ZipDataset(Dataset):
 
         self._spec = ElementSpec(_type, _shape)
 
-        super(ZipDataset, self).__init__()
+        super().__init__()
 
     def __repr__(self) -> str:
         if len(self._datasets == 1):
@@ -598,11 +595,11 @@ class ZipDataset(Dataset):
             ds_repr = ",".join([str(ds) for ds in self._datasets])
         return "<ZipDataset:(%s,)>" % ds_repr
 
-    def _inputs(self) -> List[Dataset]:
+    def _inputs(self) -> list[Dataset]:
         return list(self._datasets)
 
     def copy(self) -> "ZipDataset":
-        datasets = tuple([ds.copy() for ds in self._datasets])
+        datasets = tuple(ds.copy() for ds in self._datasets)
         return ZipDataset(datasets)
 
     @property
@@ -617,11 +614,11 @@ class ZipDataset(Dataset):
     def element_spec(self) -> ElementSpec:
         return self._spec
 
-    def set_inputs(self, datasets: Tuple[Dataset]) -> None:
+    def set_inputs(self, datasets: tuple[Dataset]) -> None:
         self._datasets = datasets
 
         _type = tuple(dataset.element_spec.elem_type for dataset in datasets)
-        _type = Tuple[_type]
+        _type = tuple[_type]
         _shape = ",".join([dataset.element_spec.shape for dataset in datasets])
 
         if len(self._datasets) == 1:

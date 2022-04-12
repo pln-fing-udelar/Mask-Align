@@ -1,21 +1,14 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import math
 import torch
 import torch.nn as nn
 
-import thualign.utils as utils
 import thualign.modules as modules
+
 
 class AlignmentModel(modules.Module):
 
     def __init__(self, params=None, name="base"):
-        super(AlignmentModel, self).__init__(name=name)
+        super().__init__(name=name)
         self.params = params
         self.inf = 65530.0 if getattr(params, "half", False) else 1e9
 
@@ -45,7 +38,7 @@ class AlignmentModel(modules.Module):
 
         self.bias = torch.nn.Parameter(torch.zeros([params.hidden_size]))
         self.add_name(self.bias, "bias")
-    
+
     @property
     def src_embedding(self):
         if self.params.shared_source_target_embedding:
@@ -76,19 +69,19 @@ class AlignmentModel(modules.Module):
         if not self.params.shared_embedding_and_softmax_weights:
             nn.init.normal_(self.softmax_weights, mean=0.0,
                             std=self.params.hidden_size ** -0.5)
-    
+
     def reset_parameters(self):
         self.reset_embedding_parameters()
 
     def masking_bias(self, mask):
-        ret = (1.0 - mask) * (-self.inf) # b x n
-        return torch.unsqueeze(torch.unsqueeze(ret, 1), 1) # b x 1 x 1 x n
+        ret = (1.0 - mask) * (-self.inf)  # b x n
+        return torch.unsqueeze(torch.unsqueeze(ret, 1), 1)  # b x 1 x 1 x n
 
     def causal_bias(self, length):
         ret = torch.ones([length, length]) * (-self.inf)
         ret = torch.triu(ret, diagonal=1)
         return torch.reshape(ret, [1, 1, length, length])
-    
+
     @classmethod
     def build_model(cls, params):
         return cls(params)

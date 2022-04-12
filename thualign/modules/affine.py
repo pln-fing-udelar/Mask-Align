@@ -1,11 +1,8 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import math
+
 import torch
 import torch.nn as nn
 
@@ -16,7 +13,7 @@ from thualign.modules.module import Module
 class Affine(Module):
 
     def __init__(self, in_features, out_features, bias=True, name="affine"):
-        super(Affine, self).__init__(name=name)
+        super().__init__(name=name)
         self.in_features = in_features
         self.out_features = out_features
 

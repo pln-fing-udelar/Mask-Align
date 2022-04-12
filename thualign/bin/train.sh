@@ -1,19 +1,19 @@
 # coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-CLI_DIR=$(cd "$(dirname "$0")"; pwd)
+CLI_DIR=$(cd "$(dirname "$0")" || exit; pwd)
 
 code_dir="$CLI_DIR/.."
 export PYTHONPATH="$PYTHON:$code_dir"
 
 EXP="DEFAULT"
 
-SCRIPT=`basename ${BASH_SOURCE[0]}`
+SCRIPT=$(basename "${BASH_SOURCE[0]}")
 
 #Set fonts for Help.
-NORM=`tput sgr0`
-BOLD=`tput bold`
-REV=`tput smso`
+NORM=$(tput sgr0)
+BOLD=$(tput bold)
+REV=$(tput smso)
 
 #Help function
 function HELP {
@@ -42,4 +42,4 @@ do
 done
 
 echo "running $CONFIG"
-python $CLI_DIR/trainer.py --config $CONFIG --exp $EXP
+python "$CLI_DIR"/trainer.py --config "$CONFIG" --exp "$EXP"

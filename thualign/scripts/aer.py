@@ -5,12 +5,12 @@ import argparse
 import itertools
 from collections import Counter
 
-
 PUNCTUATION_MARKS = {".", ",", "!", "?", ";", ":", "(", ")"}
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("Calculates Alignment Error Rate, output format: AER (Precision, Recall, Alginment-Links-Hypothesis)")
+    parser = argparse.ArgumentParser(
+        "Calculates Alignment Error Rate, output format: AER (Precision, Recall, Alginment-Links-Hypothesis)")
     parser.add_argument("reference", help="path of reference alignment, e.g. '10-9 11p42'")
     parser.add_argument("hypothesis", help="path to hypothesis alignment")
 
@@ -19,13 +19,17 @@ def parse_args():
 
     parser.add_argument("--oneRef", help="reference indices start at index 1", action='store_true')
     parser.add_argument("--oneHyp", help="hypothesis indices start at index 1", action='store_true')
-    parser.add_argument("--allSure", help="treat all alignments in the reference as sure alignments", action='store_true')
+    parser.add_argument("--allSure", help="treat all alignments in the reference as sure alignments",
+                        action='store_true')
     parser.add_argument("--ignorePossible", help="Ignore all possible links", action='store_true')
-    parser.add_argument("--fAlpha", help="alpha parameter used to calculate f measure (has to be set to a value >= 0.0 to report the f-measure)", default=-1.0, type=float)
+    parser.add_argument("--fAlpha",
+                        help="alpha parameter used to calculate f measure (has to be set to a value >= 0.0 to report the f-measure)",
+                        default=-1.0, type=float)
 
     parser.add_argument("--source", default="", help="the source sentence, used for an error analysis")
     parser.add_argument("--target", default="", help="the target sentence, used for an error analysis")
-    parser.add_argument("--cleanPunctuation", action="store_true", help="Removes alignments including punctuation marks, that are not aligned to the same punctuation mark (e.g. ','-'that')")
+    parser.add_argument("--cleanPunctuation", action="store_true",
+                        help="Removes alignments including punctuation marks, that are not aligned to the same punctuation mark (e.g. ','-'that')")
     parser.add_argument("--most_common_errors", default=10, type=int)
 
     return parser.parse_args()
@@ -41,6 +45,7 @@ def calculate_internal_jumps(alignments):
     >>> calculate_internal_jumps([set()])
     0
     """
+
     def contiguous(s):
         if len(s) <= 1:
             return True
@@ -63,7 +68,7 @@ def calculate_external_jumps(alignments):
     for prev, current in zip(alignments, alignments[1:]):
         if len(prev) > 0 and len(current) > 0:
             src = sorted(prev)[0]
-            if src in current or src+1 in current or src-1 in current:
+            if src in current or src + 1 in current or src - 1 in current:
                 pass
             else:
                 jumps += 1
@@ -76,13 +81,14 @@ def to_list(A):
     [set(), {2}]
     """
     max_tgt_idx = max({y for x, y in A}) if len(A) > 0 else 0
-    lst = [set() for _ in range(max_tgt_idx+1)]
+    lst = [set() for _ in range(max_tgt_idx + 1)]
     for x, y in A:
         lst[y].add(x)
     return lst
 
 
-def calculate_metrics(array_sure, array_possible, array_hypothesis, f_alpha, source_sentences=(), target_sentences=(), clean_punctuation=False):
+def calculate_metrics(array_sure, array_possible, array_hypothesis, f_alpha, source_sentences=(), target_sentences=(),
+                      clean_punctuation=False):
     """ Calculates precision, recall and alignment error rate as described in "A Systematic Comparison of Various
         Statistical Alignment Models" (https://www.aclweb.org/anthology/J/J03/J03-1002.pdf) in chapter 5
 
@@ -100,12 +106,15 @@ def calculate_metrics(array_sure, array_possible, array_hypothesis, f_alpha, sou
     errors = Counter()
 
     sum_a_intersect_p, sum_a_intersect_s, sum_s, sum_a, aligned_source_words, aligned_target_words = 6 * [0.0]
-    sum_source_words, sum_target_words = map(lambda s: max(1.0, sum(len(x) for x in s)), [source_sentences, target_sentences])
+    sum_source_words, sum_target_words = map(lambda s: max(1.0, sum(len(x) for x in s)),
+                                             [source_sentences, target_sentences])
     internal_jumps, external_jumps = 0, 0
 
-    for S, P, A, source, target in itertools.zip_longest(array_sure, array_possible, array_hypothesis, source_sentences, target_sentences):
+    for S, P, A, source, target in itertools.zip_longest(array_sure, array_possible, array_hypothesis, source_sentences,
+                                                         target_sentences):
         if clean_punctuation:
-            A = {(s, t) for (s, t) in A if not ((source[s] in PUNCTUATION_MARKS or target[t] in PUNCTUATION_MARKS) and source[s] != target[t])}
+            A = {(s, t) for (s, t) in A if
+                 not ((source[s] in PUNCTUATION_MARKS or target[t] in PUNCTUATION_MARKS) and source[s] != target[t])}
         sum_a += len(A)
         sum_s += len(S)
         sum_a_intersect_p += len(A.intersection(P))
@@ -161,7 +170,7 @@ def parse_single_alignment(string, reverse=False, one_indexed=False):
 def read_text(path):
     if path == "":
         return []
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return [l.split() for l in f]
 
 
@@ -172,9 +181,10 @@ if __name__ == "__main__":
     source, target = map(read_text, [args.source, args.target])
 
     assert len(source) == len(target), "Length of source and target does not match"
-    assert (not args.cleanPunctuation) or len(source) > 0, "To clean punctuation alignments, specify a source and target text file"
+    assert (not args.cleanPunctuation) or len(
+        source) > 0, "To clean punctuation alignments, specify a source and target text file"
 
-    with open(args.reference, 'r') as f:
+    with open(args.reference) as f:
         for line in f:
             sure.append(set())
             possible.append(set())
@@ -189,7 +199,7 @@ if __name__ == "__main__":
                 if sure_alignment or not args.ignorePossible:
                     possible[-1].add(alignment_tuple)
 
-    with open(args.hypothesis, 'r') as f:
+    with open(args.hypothesis) as f:
         for line in f:
             hypothesis.append(set())
 
@@ -197,14 +207,16 @@ if __name__ == "__main__":
                 alignment_tuple = parse_single_alignment(alignment_string, args.reverseHyp, args.oneHyp)
                 hypothesis[-1].add(alignment_tuple)
 
-    precision, recall, aer, f_measure, errors, source_coverage, target_coverage, internal_jumps, external_jumps = calculate_metrics(sure, possible, hypothesis, args.fAlpha, source, target, args.cleanPunctuation)
-    print("{0}: {1:.1f}% ({2:.1f}%/{3:.1f}%/{4})".format(args.hypothesis,
-                aer * 100.0, precision * 100.0, recall * 100.0, sum([len(x) for x in hypothesis])))
+    precision, recall, aer, f_measure, errors, source_coverage, target_coverage, internal_jumps, external_jumps = calculate_metrics(
+        sure, possible, hypothesis, args.fAlpha, source, target, args.cleanPunctuation)
+    print("{}: {:.1f}% ({:.1f}%/{:.1f}%/{})".format(args.hypothesis,
+                                                    aer * 100.0, precision * 100.0, recall * 100.0,
+                                                    sum(len(x) for x in hypothesis)))
     if args.fAlpha >= 0.0:
-        print("F-Measure: {:.3f}".format(f_measure))
+        print(f"F-Measure: {f_measure:.3f}")
 
     if args.source:
         assert args.target and args.most_common_errors > 0, "To output the most common errors, define a source and target file and the number of errors to output"
         print(errors.most_common(args.most_common_errors))
-        print("Internal Jumps: {}, External Jumps: {}".format(internal_jumps, external_jumps))
-        print("Source Coverage: {:.1f}%, Target Coverage: {:.1f}%".format(source_coverage * 100.0, target_coverage * 100.0))
+        print(f"Internal Jumps: {internal_jumps}, External Jumps: {external_jumps}")
+        print(f"Source Coverage: {source_coverage * 100.0:.1f}%, Target Coverage: {target_coverage * 100.0:.1f}%")

@@ -1,12 +1,9 @@
 #!/usr/bin/env python
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import argparse
+
 import numpy
 
 
@@ -27,7 +24,7 @@ def main(args):
     suffix = "." + args.suffix
     stream = [open(item, "rb") for item in name]
     data = [fd.readlines() for fd in stream]
-    minlen = min([len(lines) for lines in data])
+    minlen = min(len(lines) for lines in data)
 
     if args.seed:
         numpy.random.seed(args.seed)

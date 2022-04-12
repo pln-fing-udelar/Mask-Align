@@ -1,15 +1,10 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 # Modified from TensorFlow (tf.contrib.training.HParams)
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import json
 import logging
 import re
-import six
 
 
 def parse_values(values, type_map):
@@ -35,7 +30,7 @@ def parse_values(values, type_map):
             raise ValueError("Unknown hyperparameter type for %s" % name)
 
         def parse_fail():
-            raise ValueError("Could not parse hparam %s in %s" % (name, values))
+            raise ValueError(f"Could not parse hparam {name} in {values}")
 
         if type_map[name] == bool:
             def parse_bool(value):
@@ -48,10 +43,10 @@ def parse_values(values, type_map):
                         return bool(int(value))
                     except ValueError:
                         parse_fail()
+
             parse = parse_bool
         else:
             parse = type_map[name]
-
 
         if m_dict["val"] is not None:
             try:
@@ -70,12 +65,12 @@ def parse_values(values, type_map):
     return ret
 
 
-class HParams(object):
+class HParams:
 
     def __init__(self, **kwargs):
         self._hparam_types = {}
 
-        for name, value in six.iteritems(kwargs):
+        for name, value in kwargs.items():
             self.add_hparam(name, value)
 
     def add_hparam(self, name, value):
@@ -93,7 +88,7 @@ class HParams(object):
     def parse(self, values):
         type_map = dict()
 
-        for name, t in six.iteritems(self._hparam_types):
+        for name, t in self._hparam_types.items():
             param_type, _ = t
             type_map[name] = param_type
 
@@ -101,7 +96,7 @@ class HParams(object):
         return self._set_from_map(values_map)
 
     def _set_from_map(self, values_map):
-        for name, value in six.iteritems(values_map):
+        for name, value in values_map.items():
             if name not in self._hparam_types:
                 logging.debug("%s not found in hparams." % name)
                 continue
@@ -128,7 +123,7 @@ class HParams(object):
         return self._set_from_map(values_map)
 
     def values(self):
-        return {n: getattr(self, n) for n in six.iterkeys(self._hparam_types)}
+        return {n: getattr(self, n) for n in self._hparam_types.keys()}
 
     def __str__(self):
-        return str(sorted(six.iteritems(self.values())))
+        return str(sorted(self.values().items()))

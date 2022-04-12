@@ -1,12 +1,9 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
-import os
 import glob
+import os
+
 import torch
 
 
@@ -57,6 +54,7 @@ def latest_checkpoint(path):
 
     return checkpoint_name
 
+
 def best_checkpoint(path):
     eval_dir = os.path.join(path, 'eval')
     if os.path.exists(eval_dir):
@@ -64,13 +62,14 @@ def best_checkpoint(path):
         if os.path.exists(record_file):
             with open(record_file) as f:
                 record = [line.split(':') for line in f]
-                record = [(x.replace('"', ''),  float(y)) for x, y in record]
+                record = [(x.replace('"', ''), float(y)) for x, y in record]
             record = sorted(record, key=lambda x: x[1])
             return os.path.join(eval_dir, record[-1][0])
         else:
             return latest_checkpoint(path)
     else:
         return latest_checkpoint(path)
+
 
 def save(state, path, max_to_keep=None):
     checkpoints = glob.glob(os.path.join(path, "*.pt"))

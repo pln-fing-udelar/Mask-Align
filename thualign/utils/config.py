@@ -1,14 +1,10 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
-import os
-import json
 import configparser
-import logging
+import json
+import os
+
 
 def parse(value):
     res = value
@@ -28,6 +24,7 @@ def parse(value):
                 res = False
     return res
 
+
 class Config:
 
     def __init__(self, config):
@@ -41,16 +38,16 @@ class Config:
                 self._params[kk] = parse(vv)
 
     def __getattr__(self, name):
-        if name in self._params:     
+        if name in self._params:
             return self._params[name]
         else:
             raise AttributeError("'Config' object has no attribute '%s'" \
-                                % name)
+                                 % name)
 
     def export(self, filename):
         with open(filename, 'w') as f:
             self.config.write(f)
-    
+
     def override_config(self, filename, field=('model',)):
         config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
         if os.path.exists(filename):
@@ -60,7 +57,7 @@ class Config:
                     self._params[k] = parse(v)
         else:
             raise ValueError("Cannot find config file '%s'" % filename)
-    
+
     def __str__(self):
         return json.dumps(self._params, sort_keys=True)
 
@@ -69,7 +66,7 @@ class Config:
         curdir = os.path.dirname(__file__)
         if not os.path.exists(cfg):
             cfg = os.path.join(curdir, \
-                '../configs/user/{}.config'.format(cfg.replace('.config', '')))
+                               '../configs/user/{}.config'.format(cfg.replace('.config', '')))
         base = base or os.path.join(curdir, '../configs/base.config')
         model = model or os.path.join(curdir, '../configs/model.config')
 
@@ -90,6 +87,7 @@ class Config:
 
         return cls(all_config)
 
+
 def read_config_file(file, field=None, keepdict=False):
     if os.path.exists(file):
         config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
@@ -107,16 +105,19 @@ def read_config_file(file, field=None, keepdict=False):
     else:
         raise FileNotFoundError("No such file or directory '%s'" % file)
 
+
 def config_to_dict(config):
     res = config._sections
     res['DEFAULT'] = config.defaults()
     return res
+
 
 def merge_config(base_config, add_config):
     if isinstance(add_config, configparser.ConfigParser):
         add_config = config_to_dict(add_config)
     base_config.read_dict(add_config)
     return base_config
+
 
 def reverse_data(data_config):
     for section in data_config:

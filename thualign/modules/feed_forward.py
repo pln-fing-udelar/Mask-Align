@@ -1,23 +1,18 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
-import torch
 import torch.nn as nn
-import thualign.utils as utils
 
-from thualign.modules.module import Module
+import thualign.utils as utils
 from thualign.modules.affine import Affine
+from thualign.modules.module import Module
 
 
 class FeedForward(Module):
 
     def __init__(self, input_size, hidden_size, output_size=None, dropout=0.0,
                  name="feed_forward"):
-        super(FeedForward, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.input_size = input_size
         self.hidden_size = hidden_size

@@ -1,30 +1,20 @@
-import os
+#!/usr/bin/env python
 import re
-import random
+
 
 # For the corpus https://opus.nlpl.eu/download.php?f=WikiMatrix/v1/tmx/en-es.tmx.gz
 
-vocab_es = open("./es.vocab", "r", encoding="utf-8")
-vocab_en = open("./en.vocab", "r", encoding="utf-8")
+def process_vocab(input_path: str, output_path: str) -> None:
+    with open(input_path, encoding="utf-8") as vocab, open(output_path, "w", encoding="utf-8") as vocab_final:
+        for line in vocab:
+            if token := re.search(r"(.*?)\t", line).group(1):
+                vocab_final.write(token + "\n")
 
 
-vocab_es_final = open("./vocab.32k.es.txt", "w", encoding="utf-8")
-vocab_en_final = open("./vocab.32k.en.txt", "w", encoding="utf-8")
+def main() -> None:
+    process_vocab("es.vocab", "vocab.32k.es.txt")
+    process_vocab("en.vocab", "vocab.32k.en.txt")
 
-data_es = vocab_es.readlines()
-data_en = vocab_en.readlines()
 
-for i in range(0, len(data_es)):
-    token = re.search(r'(.*?)\t.*', data_es[i]).group(1)
-    if token:
-        vocab_es_final.write(token + '\n')
-
-for i in range(0, len(data_en)):
-    token = re.search(r'(.*?)\t.*', data_en[i]).group(1)
-    if token:
-        vocab_en_final.write(token + '\n')
-
-vocab_es.close()
-vocab_en.close()
-vocab_es_final.close()
-vocab_en_final.close()
+if __name__ == "__main__":
+    main()

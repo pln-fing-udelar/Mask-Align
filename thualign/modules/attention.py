@@ -1,22 +1,18 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import torch
 import torch.nn as nn
-import thualign.utils as utils
 
-from thualign.modules.module import Module
+import thualign.utils as utils
 from thualign.modules.affine import Affine
+from thualign.modules.module import Module
 
 
 class Attention(Module):
 
     def __init__(self, q_size, k_size, hidden_size, name="attention"):
-        super(Attention, self).__init__(name)
+        super().__init__(name)
 
         self._q_size = q_size
         self._k_size = k_size
@@ -83,7 +79,7 @@ class Attention(Module):
 class MultiHeadAttentionBase(Module):
 
     def __init__(self, name="multihead_attention_base"):
-        super(MultiHeadAttentionBase, self).__init__(name=name)
+        super().__init__(name=name)
 
     @staticmethod
     def split_heads(x, heads):
@@ -110,7 +106,7 @@ class MultiHeadAttention(MultiHeadAttentionBase):
 
     def __init__(self, hidden_size, num_heads, dropout=0.0, leaky=False,
                  name="multihead_attention"):
-        super(MultiHeadAttention, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.num_heads = num_heads
         self.hidden_size = hidden_size
@@ -159,16 +155,16 @@ class MultiHeadAttention(MultiHeadAttentionBase):
 
         # add leaky position, nk' = (nk+1) is self.leaky else nk
         if self.leaky:
-            k = torch.cat([self.leaky_k.expand(k.shape[0], -1, -1), k], dim=1) # b x nk' x d
-            v = torch.cat([self.leaky_v.expand(v.shape[0], -1, -1), v], dim=1) # b x nk' x d
+            k = torch.cat([self.leaky_k.expand(k.shape[0], -1, -1), k], dim=1)  # b x nk' x d
+            v = torch.cat([self.leaky_v.expand(v.shape[0], -1, -1), v], dim=1)  # b x nk' x d
 
         # split heads
-        qh = self.split_heads(q, self.num_heads) # b x h x nq x d
-        kh = self.split_heads(k, self.num_heads) # b x h x nk' x d
-        vh = self.split_heads(v, self.num_heads) # b x h x nk' x d
+        qh = self.split_heads(q, self.num_heads)  # b x h x nq x d
+        kh = self.split_heads(k, self.num_heads)  # b x h x nk' x d
+        vh = self.split_heads(v, self.num_heads)  # b x h x nk' x d
 
         # scale query
-        qh = qh * (self.hidden_size // self.num_heads) ** -0.5 # b x h x nq x d
+        qh = qh * (self.hidden_size // self.num_heads) ** -0.5  # b x h x nq x d
 
         # dot-product attention
         kh = torch.transpose(kh, -2, -1)
@@ -176,21 +172,21 @@ class MultiHeadAttention(MultiHeadAttentionBase):
 
         if bias is not None:
             if self.leaky:
-                bias = torch.cat([bias.new_zeros(bias.shape[0], 1, 1, 1), bias], dim=-1) # b x 1 x 1 x 1
+                bias = torch.cat([bias.new_zeros(bias.shape[0], 1, 1, 1), bias], dim=-1)  # b x 1 x 1 x 1
             logits = logits + bias
 
         weights = torch.nn.functional.dropout(torch.softmax(logits, dim=-1),
                                               p=self.dropout,
-                                              training=self.training)                    # b x h x nq x nk'
+                                              training=self.training)  # b x h x nq x nk'
 
         x = torch.matmul(weights, vh)
 
         if self.leaky:
             # we only consider weights without the leaky postion
-            weights = torch.split(weights, [1, nk], dim=-1)[1] # b x h x nq x nk
+            weights = torch.split(weights, [1, nk], dim=-1)[1]  # b x h x nq x nk
 
         # combine heads
-        output = self.o_transform(self.combine_heads(x)) # b x nq x d
+        output = self.o_transform(self.combine_heads(x))  # b x nq x d
 
         if kv is not None:
             if require_weight:
@@ -225,7 +221,7 @@ class MultiHeadAdditiveAttention(MultiHeadAttentionBase):
 
     def __init__(self, q_size, k_size, hidden_size, num_heads, dropout=0.0,
                  name="multihead_attention"):
-        super(MultiHeadAdditiveAttention, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.num_heads = num_heads
         self.hidden_size = hidden_size

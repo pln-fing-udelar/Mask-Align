@@ -1,9 +1,5 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import datetime
 import glob
@@ -11,18 +7,16 @@ import operator
 import os
 import shutil
 import time
-import torch
 
+import torch
 import torch.distributed as dist
 
-from thualign.data import idxs2str 
-from thualign.utils.checkpoint import save, latest_checkpoint
-from thualign.utils.inference import beam_search
-from thualign.utils.bleu import bleu
-from thualign.utils.bpe import BPE
-from thualign.utils.misc import get_global_step
-from thualign.utils.summary import scalar, figure
+from thualign.data import idxs2str
 from thualign.utils.alignment import draw_weights
+from thualign.utils.checkpoint import latest_checkpoint, save
+from thualign.utils.misc import get_global_step
+from thualign.utils.summary import figure, scalar
+
 
 def _save_log(filename, result):
     metric, global_step, score = result
@@ -65,7 +59,7 @@ def _save_score_record(filename, records):
     with open(filename, "w") as fd:
         for record in sorted_records:
             checkpoint_name, score = record
-            fd.write("\"%s\": %f\n" % (checkpoint_name, score))
+            fd.write(f"\"{checkpoint_name}\": {score:f}\n")
 
 
 def _add_to_record(records, record, max_to_keep):
@@ -96,11 +90,13 @@ def _add_to_record(records, record, max_to_keep):
 
     return added, removed, records
 
+
 def to_cuda(features):
     for key in features:
         features[key] = features[key].cuda()
 
     return features
+
 
 def evaluate(model, dataset, base_dir, params):
     base_dir = base_dir.rstrip("/")
@@ -127,7 +123,7 @@ def evaluate(model, dataset, base_dir, params):
 
     if dist.get_rank() == 0:
         print("Validating model at step %d" % global_step)
-    
+
     with torch.no_grad():
         model.eval()
         iterator = iter(dataset)
@@ -160,7 +156,7 @@ def evaluate(model, dataset, base_dir, params):
 
             t = time.time()
             counter += 1
-            
+
             acc_cnt, all_cnt, all_weights = model.cal_alignment(features)
 
             # Synchronization
@@ -183,11 +179,11 @@ def evaluate(model, dataset, base_dir, params):
             if all_cnt != 0:
                 score = float(acc_cnt) / all_cnt
 
-            info = "{:.3f}".format(score)
+            info = f"{score:.3f}"
             print("Finished batch(%d): %s (%.3f sec)" % (counter, info, t))
 
         if dist.get_rank() == 0 and eval_plot:
-            acc_cnt, all_cnt, state = model.cal_alignment(fig_features) # b x n_layer x h x nq x nk
+            acc_cnt, all_cnt, state = model.cal_alignment(fig_features)  # b x n_layer x h x nq x nk
             alignment_score = state['alignment_score'].cpu()
             src_seqs = idxs2str(fig_features['source'].cpu(), params.vocabulary['source'])
             tgt_seqs = idxs2str(fig_features['target'].cpu(), params.vocabulary['target'])
@@ -195,7 +191,7 @@ def evaluate(model, dataset, base_dir, params):
             for align_score, src_seq, tgt_seq in zip(alignment_score, src_seqs, tgt_seqs):
                 if len(src_seq) < 20 and len(tgt_seq) < 20:
                     fig = draw_weights(align_score, src_seq, tgt_seq)
-                    figure("eval_plot_{}".format(cnt), fig, global_step, write_every_n_steps=1)
+                    figure(f"eval_plot_{cnt}", fig, global_step, write_every_n_steps=1)
                     cnt += 1
                 if cnt >= 5:
                     break

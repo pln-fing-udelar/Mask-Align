@@ -1,18 +1,18 @@
 #!/usr/bin/env python
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
+import argparse
 import os
 import time
-import argparse
-import remi.gui as gui
-from remi import start, App
-
-import torch
 from collections.abc import Iterable
+
+import remi.gui as gui
+import torch
 from pyecharts import options as opts
 from pyecharts.charts import HeatMap
 from pyecharts.commons.utils import JsCode
+from remi import App, start
+
 
 def sort_keys(keys):
     """
@@ -40,8 +40,10 @@ def sort_keys(keys):
     res = ref + weight + hard + bi_align
     return res
 
+
 def legalize(s):
-    return s.replace('<', '[').replace('>', ']').replace('▁','')
+    return s.replace('<', '[').replace('>', ']').replace('▁', '')
+
 
 def legalize_lb(lb):
     '''
@@ -54,20 +56,21 @@ def legalize_lb(lb):
     res = []
     for i in lb:
         if i.startswith('▁'):
-            res.append(i.replace('▁',''))
+            res.append(i.replace('▁', ''))
         else:
             res[-1] = res[-1] + '@@'
             res.append(i)
     return res
 
+
 class DataGenerator:
 
     def __init__(self, data):
-        self._data = data # ['src', 'tgt', 'weight', 'metrics', 'ref']
+        self._data = data  # ['src', 'tgt', 'weight', 'metrics', 'ref']
         for i in range(len(self._data)):
             for k in self._data[i]['metrics']:
                 if not isinstance(self._data[i]['metrics'][k], Iterable):
-                    self._data[i]['metrics'][k] = (self._data[i]['metrics'][k], )
+                    self._data[i]['metrics'][k] = (self._data[i]['metrics'][k],)
         self.idx = -1
 
     def __len__(self):
@@ -87,7 +90,7 @@ class DataGenerator:
         if x >= len(self._data):
             x = x % len(self._data)
         self.idx = x
-        data = self._data[x] # data: dict of weights [ny, nx]
+        data = self._data[x]  # data: dict of weights [ny, nx]
         x_lb = legalize_lb(data['src'])
         y_lb = legalize_lb(data['tgt'])
         info = 'Info: '
@@ -95,7 +98,7 @@ class DataGenerator:
             metrics = data['metrics']
             keys = sort_keys(metrics.keys())
             for k in keys:
-                info += '{}: {:.1f} '.format(k, metrics[k][0]*100)      
+                info += f'{k}: {metrics[k][0] * 100:.1f} '
         weights = {}
         for k, v in data['weights'].items():
             if isinstance(v, list):
@@ -104,8 +107,10 @@ class DataGenerator:
             else:
                 tw = v
                 tw = tw[:len(y_lb), :len(x_lb)]
-                tw = [(j, i, tw[i,j].item()) for i in range(tw.shape[0]) for j in range(tw.shape[1])]
-            weights[k] = [{'name': '[{}, {}]'.format(legalize(x_lb[x[0]]), legalize(y_lb[x[1]])), 'value': [x[0], x[1], x[2]*100]} for x in tw]
+                tw = [(j, i, tw[i, j].item()) for i in range(tw.shape[0]) for j in range(tw.shape[1])]
+            weights[k] = [
+                {'name': f'[{legalize(x_lb[x[0]])}, {legalize(y_lb[x[1]])}]', 'value': [x[0], x[1], x[2] * 100]} for x
+                in tw]
         value = {
             'info': info,
             'weights': weights
@@ -125,10 +130,11 @@ class DataGenerator:
         except Exception:
             return False
 
+
 class AlignmentChart(gui.Container):
 
-    def __init__(self, vizdata, chart_args={'width':2000, 'height':800, 'margin': '10px'}, *args, **kwargs):
-        super(AlignmentChart, self).__init__(*args, **kwargs)
+    def __init__(self, vizdata, chart_args={'width': 2000, 'height': 800, 'margin': '10px'}, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.chart_args = chart_args
         self.chart = self.get_chart()
         self.current_filename = str(time.time()) + '.html'
@@ -140,7 +146,7 @@ class AlignmentChart(gui.Container):
         return self._data.idx
 
     def get_chart(self):
-        chart = gui.Widget( _type='iframe', **self.chart_args)
+        chart = gui.Widget(_type='iframe', **self.chart_args)
         chart.attributes['width'] = '100%'
         chart.attributes['height'] = '100%'
         chart.attributes['controls'] = 'true'
@@ -150,22 +156,28 @@ class AlignmentChart(gui.Container):
     def render(self, x_lb, y_lb, value):
         info = value['info'] if 'info' in value else ""
         c = (
-            HeatMap(init_opts=opts.InitOpts(width='{}px'.format(max(50*len(x_lb), 1000)), height='{}px'.format(max(20*len(y_lb), 500))))
-            .add_xaxis(x_lb)
-            .set_global_opts(
+            HeatMap(
+                init_opts=opts.InitOpts(width=f'{max(50 * len(x_lb), 1000)}px', height=f'{max(20 * len(y_lb), 500)}px'))
+                .add_xaxis(x_lb)
+                .set_global_opts(
                 legend_opts=opts.LegendOpts(type_='scroll'),
-                visualmap_opts=opts.VisualMapOpts(is_show=True, 
-                                                orient='horizontal', 
-                                                pos_left='center', 
-                                                pos_bottom='-20',
-                                                range_color=['#ffffff', '#000000']),
+                visualmap_opts=opts.VisualMapOpts(is_show=True,
+                                                  orient='horizontal',
+                                                  pos_left='center',
+                                                  pos_bottom='-20',
+                                                  range_color=['#ffffff', '#000000']),
                 tooltip_opts=opts.TooltipOpts(is_show=True, formatter=JsCode("""function(params){
                             return params.data['name'] + ' : ' + (params.data['value'][2] / 100).toFixed(2) 
                         }
                         """)),
-                xaxis_opts=opts.AxisOpts(axislabel_opts={'rotate':45, 'interval': 0}, interval=0, splitline_opts=opts.SplitLineOpts(is_show=True, linestyle_opts={'color':'black', 'width':1})),
+                xaxis_opts=opts.AxisOpts(axislabel_opts={'rotate': 45, 'interval': 0}, interval=0,
+                                         splitline_opts=opts.SplitLineOpts(is_show=True,
+                                                                           linestyle_opts={'color': 'black',
+                                                                                           'width': 1})),
                 yaxis_opts=opts.AxisOpts(axislabel_opts={'interval': 0}, is_inverse=True, interval=0,
-                                        splitline_opts=opts.SplitLineOpts(is_show=True, linestyle_opts={'color':'black', 'width':1}))
+                                         splitline_opts=opts.SplitLineOpts(is_show=True,
+                                                                           linestyle_opts={'color': 'black',
+                                                                                           'width': 1}))
             )
         )
         keys = sort_keys(value['weights'].keys())
@@ -185,7 +197,7 @@ class AlignmentChart(gui.Container):
                 is_selected=('ref' in k),
                 itemstyle_opts=itemOpts
             )
-        
+
         for filename in os.listdir(res_path):
             if os.path.splitext(filename)[-1] == '.html':
                 os.remove(os.path.join(res_path, filename))
@@ -212,18 +224,22 @@ class AlignmentChart(gui.Container):
         else:
             return None
 
+
 class MyApp(App):
 
     def __init__(self, *args):
-        super(MyApp, self).__init__(*args, static_file_path={load_path:res_path})
+        super().__init__(*args, static_file_path={load_path: res_path})
 
     def main(self):
-        self.verticalContainer = gui.Container(width=2000, margin='0px auto', style={'display': 'block', 'overflow': 'hidden'})
+        self.verticalContainer = gui.Container(width=2000, margin='0px auto',
+                                               style={'display': 'block', 'overflow': 'hidden'})
 
         # chart container
-        self.chartContainer = gui.Container(width=2000, margin='0px auto', style={'display': 'block', 'overflow': 'hidden'})
+        self.chartContainer = gui.Container(width=2000, margin='0px auto',
+                                            style={'display': 'block', 'overflow': 'hidden'})
 
-        self.infoContainer = gui.Container(width='100%', layout_orientation=gui.Container.LAYOUT_HORIZONTAL, margin='0px', style={'display': 'block', 'overflow': 'auto'})
+        self.infoContainer = gui.Container(width='100%', layout_orientation=gui.Container.LAYOUT_HORIZONTAL,
+                                           margin='0px', style={'display': 'block', 'overflow': 'auto'})
 
         self.index_lb = gui.Label('Index: ', width=30, height=30, margin='10px')
         self.index_input = gui.Input(input_type='number', default_value=0, width=40, height=15, margin='10px')
@@ -235,7 +251,7 @@ class MyApp(App):
         self.info_lb = gui.Label('Info: ', width=2000, height=30, margin='10px')
 
         self.infoContainer.append([self.index_lb, self.index_input, self.expr])
-        
+
         self.chart = AlignmentChart(vizdata, width=2000, height=1000, margin='10px')
         self.chartContainer.append(self.infoContainer)
         self.chartContainer.append(self.info_lb)
@@ -255,7 +271,7 @@ class MyApp(App):
         self.idx = int(self.index_input.get_value())
         info = self.chart.update(idx=self.idx)
         self.info_lb.set_text(info)
-    
+
     def on_expr_change(self, widget, value):
         info = self.chart.reorder(value)
         if info:
@@ -294,6 +310,7 @@ def parse_args():
     parser.add_argument("--port", type=int, default=8082)
 
     return parser.parse_args()
+
 
 vizdata = None
 res_path = os.getcwd()

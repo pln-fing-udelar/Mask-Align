@@ -1,18 +1,15 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import math
+
 import torch
 
 
 class PositionalEmbedding(torch.nn.Module):
 
     def __init__(self):
-        super(PositionalEmbedding, self).__init__()
+        super().__init__()
 
     def forward(self, inputs):
         if inputs.dim() != 3:

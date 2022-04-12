@@ -1,26 +1,22 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 # Modified from subword-nmt
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import re
 
 
-class BPE(object):
+class BPE:
 
     def __init__(self, bpe_path, merges=-1, separator="@@"):
-        with open(bpe_path, "r", encoding="utf-8") as fd:
+        with open(bpe_path, encoding="utf-8") as fd:
             firstline = fd.readline()
 
             if not firstline.startswith("#version:"):
                 raise ValueError("thualign only support BPE version >= 0.2.")
 
-            codes = tuple([item.strip("\r\n").split(" ")
-                           for (n, item) in enumerate(fd)
-                           if (n < merges or merges == -1)])
+            codes = tuple(item.strip("\r\n").split(" ")
+                          for (n, item) in enumerate(fd)
+                          if (n < merges or merges == -1))
 
         for _, item in enumerate(codes):
             if len(item) != 2:
@@ -43,7 +39,6 @@ class BPE(object):
             prev_char = char
 
         return pairs
-
 
     def _encode_word(self, orig):
         word = tuple(orig[:-1]) + (orig[-1] + "</w>",)

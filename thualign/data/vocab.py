@@ -1,14 +1,11 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
+from collections.abc import Iterable
+from typing import Union
 
-import numpy as np
-import six
 import torch
 
-from typing import Union
-from collections.abc import Iterable
 
-class Vocabulary(object):
+class Vocabulary:
 
     def __init__(self, filename):
         self._idx2word = {}
@@ -39,11 +36,12 @@ class Vocabulary(object):
         return key in self._word2idx
 
     def __iter__(self):
-        return six.iterkeys(self._word2idx)
+        return self._word2idx.keys()
 
     def __len__(self):
         return len(self._idx2word)
-        
+
+
 def idxs2str(seq, vocab, pad=b'<pad>'):
     try:
         if isinstance(seq, torch.LongTensor):
@@ -54,7 +52,7 @@ def idxs2str(seq, vocab, pad=b'<pad>'):
             res = [idxs2str(seq_i, vocab, pad) for seq_i in seq]
         else:
             res = [vocab[int(tok)].decode('utf-8') for tok in seq
-                                                    if vocab[int(tok)] != pad]
+                   if vocab[int(tok)] != pad]
     except:
-        raise ValueError("Unsupported inputs for idxs2str: {}".format(seq))
+        raise ValueError(f"Unsupported inputs for idxs2str: {seq}")
     return res

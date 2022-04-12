@@ -1,15 +1,12 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numbers
+
 import torch
 import torch.nn as nn
-import thualign.utils as utils
 
+import thualign.utils as utils
 from thualign.modules.module import Module
 
 
@@ -17,7 +14,7 @@ class LayerNorm(Module):
 
     def __init__(self, normalized_shape, eps=1e-5, elementwise_affine=True,
                  name="layer_norm"):
-        super(LayerNorm, self).__init__(name=name)
+        super().__init__(name=name)
         if isinstance(normalized_shape, numbers.Integral):
             normalized_shape = (normalized_shape,)
         self.normalized_shape = tuple(normalized_shape)
@@ -46,4 +43,4 @@ class LayerNorm(Module):
 
     def extra_repr(self):
         return '{normalized_shape}, eps={eps}, ' \
-            'elementwise_affine={elementwise_affine}'.format(**self.__dict__)
+               'elementwise_affine={elementwise_affine}'.format(**self.__dict__)

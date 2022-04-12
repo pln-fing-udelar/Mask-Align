@@ -1,17 +1,11 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import re
 import math
+
 import torch
 import torch.distributed as dist
+
 import thualign.utils as utils
 import thualign.utils.summary as summary
-
 from thualign.optimizers.schedules import LearningRateSchedule
 
 
@@ -50,7 +44,7 @@ def _compute_grad_norm(gradients):
     return float(total_norm ** 0.5)
 
 
-class Optimizer(object):
+class Optimizer:
 
     def __init__(self, name, **kwargs):
         self._name = name
@@ -113,7 +107,7 @@ class Optimizer(object):
 class SGDOptimizer(Optimizer):
 
     def __init__(self, learning_rate, summaries=True, name="SGD", **kwargs):
-        super(SGDOptimizer, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
         self._learning_rate = learning_rate
         self._summaries = summaries
         self._clipper = None
@@ -175,7 +169,7 @@ class AdamOptimizer(Optimizer):
 
     def __init__(self, learning_rate=0.01, beta_1=0.9, beta_2=0.999,
                  epsilon=1e-7, name="Adam", **kwargs):
-        super(AdamOptimizer, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
         self._learning_rate = learning_rate
         self._beta_1 = beta_1
         self._beta_2 = beta_2
@@ -277,7 +271,7 @@ class AdadeltaOptimizer(Optimizer):
 
     def __init__(self, learning_rate=0.001, rho=0.95, epsilon=1e-07,
                  name="Adadelta", **kwargs):
-        super(AdadeltaOptimizer, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
         self._learning_rate = learning_rate
         self._rho = rho
         self._epsilon = epsilon
@@ -372,9 +366,9 @@ class AdadeltaOptimizer(Optimizer):
 
 class LossScalingOptimizer(Optimizer):
 
-    def __init__(self, optimizer, scale=2.0**7, increment_period=2000,
+    def __init__(self, optimizer, scale=2.0 ** 7, increment_period=2000,
                  multiplier=2.0, name="LossScalingOptimizer", **kwargs):
-        super(LossScalingOptimizer, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
         self._optimizer = optimizer
         self._scale = scale
         self._increment_period = increment_period
@@ -388,7 +382,7 @@ class LossScalingOptimizer(Optimizer):
     def _update_if_finite_grads(self):
         if self._num_good_steps + 1 > self._increment_period:
             self._scale *= self._multiplier
-            self._scale = min(self._scale, 2.0**16)
+            self._scale = min(self._scale, 2.0 ** 16)
             self._num_good_steps = 0
         else:
             self._num_good_steps += 1
@@ -456,7 +450,7 @@ class MultiStepOptimizer(Optimizer):
 
     def __init__(self, optimizer, n=1, compress=True,
                  name="MultiStepOptimizer", **kwargs):
-        super(MultiStepOptimizer, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
         self._n = n
         self._optimizer = optimizer
         self._compress = compress

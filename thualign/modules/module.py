@@ -1,11 +1,6 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
-import torch
 import torch.nn as nn
 
 import thualign.utils as utils
@@ -14,7 +9,7 @@ import thualign.utils as utils
 class Module(nn.Module):
 
     def __init__(self, name=""):
-        super(Module, self).__init__()
+        super().__init__()
         scope = utils.get_scope()
         self._name = scope + "/" + name if scope else name
 

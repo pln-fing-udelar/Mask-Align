@@ -1,7 +1,7 @@
-# coding=utf-8
+#!/usr/bin/env bash
 # Copyright 2021-Present The THUAlign Authors
 
-CLI_DIR=$(cd "$(dirname "$0")"; pwd)
+CLI_DIR=$(cd "$(dirname "$0")" || exit; pwd)
 
 code_dir="$CLI_DIR/.."
 export PYTHONPATH="$PYTHON:$code_dir"
@@ -9,12 +9,12 @@ export PYTHONPATH="$PYTHON:$code_dir"
 EXP="DEFAULT"
 suffix=""
 
-SCRIPT=`basename ${BASH_SOURCE[0]}`
+SCRIPT=$(basename "${BASH_SOURCE[0]}")
 
 #Set fonts for Help.
-NORM=`tput sgr0`
-BOLD=`tput bold`
-REV=`tput smso`
+NORM=$(tput sgr0)
+BOLD=$(tput bold)
+REV=$(tput smso)
 
 #Help function
 function HELP {
@@ -57,4 +57,4 @@ if [ "x" = "x$CONFIG" ]; then
 fi
 
 echo "running $CONFIG"
-python $CLI_DIR/inferrer.py --config $CONFIG --exp $EXP $suffix
+python "$CLI_DIR"/inferrer.py --config "$CONFIG" --exp "$EXP" "$suffix"

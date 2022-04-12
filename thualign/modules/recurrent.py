@@ -1,25 +1,20 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import torch
 import torch.nn as nn
 
 import thualign.utils as utils
-
-from thualign.modules.module import Module
 from thualign.modules.affine import Affine
 from thualign.modules.layer_norm import LayerNorm
+from thualign.modules.module import Module
 
 
 class GRUCell(Module):
 
     def __init__(self, input_size, output_size, normalization=False,
                  name="gru"):
-        super(GRUCell, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.input_size = input_size
         self.output_size = output_size
@@ -66,7 +61,7 @@ class LSTMCell(Module):
 
     def __init__(self, input_size, output_size, normalization=False,
                  activation=None, name="lstm"):
-        super(LSTMCell, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.input_size = input_size
         self.output_size = output_size

@@ -1,9 +1,7 @@
 import abc
-import json
-import base64
 import collections
 
-from typing import List, NoReturn
+from typing import NoReturn
 
 
 def _load_vocab(vocab_file) -> collections.OrderedDict:
@@ -17,7 +15,7 @@ def _load_vocab(vocab_file) -> collections.OrderedDict:
     return vocab
 
 
-class Tokenizer(object):
+class Tokenizer:
 
     def __init__(self, name: str):
         self._name = name
@@ -35,28 +33,29 @@ class Tokenizer(object):
         raise NotImplementedError("Tokenizer.encode not implemented.")
 
     @abc.abstractmethod
-    def decode(self, inp: List[bytes]) -> NoReturn:
+    def decode(self, inp: list[bytes]) -> NoReturn:
         raise NotImplementedError("Tokenizer.decode not implemented.")
-    
+
 
 class WhiteSpaceTokenizer(Tokenizer):
 
     def __init__(self):
-        super(WhiteSpaceTokenizer, self).__init__("WhiteSpaceTokenizer")
+        super().__init__("WhiteSpaceTokenizer")
 
     def __repr__(self) -> str:
         return "WhiteSpaceTokenizer()"
 
-    def encode(self, inp: bytes) -> List[bytes]:
+    def encode(self, inp: bytes) -> list[bytes]:
         return inp.strip().split()
 
-    def decode(self, inp: List[bytes]) -> bytes:
+    def decode(self, inp: list[bytes]) -> bytes:
         return b" ".join(inp)
-    
+
+
 class WordPieceTokenizer(Tokenizer):
 
     def __init__(self, vocab, unk=b"[UNK]", max_chars_per_word=200):
-        super(WordPieceTokenizer, self).__init__("WordPieceTokenizer")
+        super().__init__("WordPieceTokenizer")
         self.vocab = vocab if isinstance(vocab, dict) else _load_vocab(vocab)
         self.unk = unk
         self.max_chars_per_word = max_chars_per_word
@@ -66,7 +65,7 @@ class WordPieceTokenizer(Tokenizer):
                "max_chars_per_word=%d)" % (len(self.vocab), self.unk,
                                            self.max_chars_per_word)
 
-    def encode(self, inp: bytes) -> List[bytes]:
+    def encode(self, inp: bytes) -> list[bytes]:
         tokens = inp.strip().split()
         output_tokens = []
         for token in tokens:
@@ -102,6 +101,5 @@ class WordPieceTokenizer(Tokenizer):
                 output_tokens.extend(sub_tokens)
         return output_tokens
 
-
-    def decode(self, inp: List[bytes]) -> bytes:
+    def decode(self, inp: list[bytes]) -> bytes:
         return b' '.join(inp).replace(b' ##', b'')

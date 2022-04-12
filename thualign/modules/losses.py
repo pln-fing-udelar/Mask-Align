@@ -1,18 +1,15 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import math
+
 import torch
 
 
 class SmoothedCrossEntropyLoss(torch.nn.Module):
 
     def __init__(self, smoothing=0.0, normalize=True):
-        super(SmoothedCrossEntropyLoss, self).__init__()
+        super().__init__()
         self.smoothing = smoothing
         self.normalize = normalize
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-### This script is used to generate the following files (using the files created by the preprocess_anotated.py script): 
-###    - answers.en:   contains the index of the answer for each sentence, after tokenizing with sentencepiece
-###    - answers.32k.en.txt:   contains the answer for each sentence in plain text, after tokenizing with sentencepiece
-###    - answers.en.txt:   contains the answer for each sentence in plain text, untokenized
+# This script is used to generate the following files (using the files created by the preprocess_annotated.py script):
+#    - answers.en:   contains the index of the answer for each sentence, after tokenizing with sentencepiece
+#    - answers.32k.en.txt:   contains the answer for each sentence in plain text, after tokenizing with sentencepiece
+#    - answers.en.txt:   contains the answer for each sentence in plain text, untokenized
 import re
 
 
@@ -17,8 +17,8 @@ def main(sent_untok_filename: str, sent_tok_filename: str, ans_idx_untok_filenam
     with open(ans_idx_untok_filename, encoding="utf-8") as answer_indexes_untokenized:
         data3 = answer_indexes_untokenized.readlines()
 
-    with open(ans_idx_tok_filename, "w", encoding="utf-8") as answer_indexes_tokenized,
-            open(ans_tok_filename, "w", encoding="utf-8") as answer_tokenized,
+    with open(ans_idx_tok_filename, "w", encoding="utf-8") as answer_indexes_tokenized, \
+            open(ans_tok_filename, "w", encoding="utf-8") as answer_tokenized, \
             open(ans_untok_filename, "w", encoding="utf-8") as answer_untokenized:
         num_sentences = min(min(len(data1), len(data2)), len(data3))
         for i in range(num_sentences):
@@ -32,30 +32,30 @@ def main(sent_untok_filename: str, sent_tok_filename: str, ans_idx_untok_filenam
             idx2 = int(data3[i].split(':')[1])
 
             ans = sentence_untok[idx1:idx2]
-            ans_fixed = re.sub(r"\?", "\?", ans)
-            ans_fixed = re.sub(r"\.", "\.", ans_fixed)
-            ans_fixed = re.sub(r"\*", "\*", ans_fixed)
-            ans_fixed = re.sub(r"\+", "\+", ans_fixed)
+            ans_fixed = re.sub(r"\?", r"\?", ans)
+            ans_fixed = re.sub(r"\.", r"\.", ans_fixed)
+            ans_fixed = re.sub(r"\*", r"\*", ans_fixed)
+            ans_fixed = re.sub(r"\+", r"\+", ans_fixed)
 
-            occurences_before = re.findall(ans_fixed, sentence_untok[:idx1])
-            num_before = len(occurences_before)
+            occurrences_before = re.findall(ans_fixed, sentence_untok[:idx1])
+            num_before = len(occurrences_before)
 
             pattern1 = r"[\s▁]*".join(list(ans))
-            pattern2 = r"[\s▁]*".join(list(re.sub("r[^\w\s]", "", ans)))
+            pattern2 = r"[\s▁]*".join(list(re.sub(r"r[^\w\s]", "", ans)))
 
-            pattern1 = re.sub("\?", "\?", pattern1)
-            pattern1 = re.sub("\.", "\.", pattern1)
-            pattern1 = re.sub("\+", "\+", pattern1)
-            pattern2 = re.sub("\?", "\?", pattern2)
-            pattern2 = re.sub("\.", "\.", pattern2)
-            pattern2 = re.sub("\+", "\+", pattern2)
+            pattern1 = re.sub(r"\?", r"\?", pattern1)
+            pattern1 = re.sub(r"\.", r"\.", pattern1)
+            pattern1 = re.sub(r"\+", r"\+", pattern1)
+            pattern2 = re.sub(r"\?", r"\?", pattern2)
+            pattern2 = re.sub(r"\.", r"\.", pattern2)
+            pattern2 = re.sub(r"\+", r"\+", pattern2)
 
-            ocurrences_tokenized = list(re.finditer(pattern1, sentence_tok))
+            occurrences_tokenized = list(re.finditer(pattern1, sentence_tok))
 
-            if not ocurrences_tokenized:
-                ocurrences_tokenized = list(re.finditer(pattern2, sentence_tok))
+            if not occurrences_tokenized:
+                occurrences_tokenized = list(re.finditer(pattern2, sentence_tok))
 
-            match = ocurrences_tokenized[num_before]
+            match = occurrences_tokenized[num_before]
 
             new_idx1 = match.span()[0]
             new_idx2 = match.span()[1]

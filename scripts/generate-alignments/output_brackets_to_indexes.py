@@ -3,9 +3,9 @@ import re
 
 
 def main() -> None:
-    with open("output-plain.txt", encoding="utf-8") as input_file,
-            open("output-indexes.txt", "w", encoding="utf-8") as output_file,
-            open("output-answers.txt", "w", encoding="utf-8") as answer_file,
+    with open("output-plain.txt", encoding="utf-8") as input_file, \
+            open("output-indexes.txt", "w", encoding="utf-8") as output_file, \
+            open("output-answers.txt", "w", encoding="utf-8") as answer_file, \
             open("output-sentences.txt", "w", encoding="utf-8") as sentence_file:
         for line in input_file:
             match1 = re.search("{{", line)

@@ -1,30 +1,22 @@
-# coding=utf-8
+#!/usr/bin/env python
 # Copyright 2021-Present The THUAlign Authors
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import argparse
-import configparser
 import copy
 import glob
-import logging
 import os
 import re
-import six
 import socket
 import time
-import string
+
 import torch
+import torch.distributed as dist
 
 import thualign.data as data
-import torch.distributed as dist
 import thualign.models as models
 import thualign.optimizers as optimizers
 import thualign.utils as utils
 import thualign.utils.summary as summary
-import thualign.utils.alignment as alignment_utils
+
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser(
@@ -52,15 +44,6 @@ def parse_args(args=None):
 
     return parser.parse_args(args)
 
-def import_params(model_dir, model_name, params):
-    model_dir = os.path.abspath(model_dir)
-    filename = os.path.join(model_dir, "params.config")
-
-    if os.path.exists(filename):
-        params.parse_config(filename)
-
-    return params
-
 
 def export_params(output_dir, name, params):
     if not os.path.exists(output_dir):
@@ -71,12 +54,14 @@ def export_params(output_dir, name, params):
 
     params.export(filename)
 
+
 def load_vocabulary(params):
     params.vocabulary = {
-        "source": data.Vocabulary(params.vocab[0]), 
+        "source": data.Vocabulary(params.vocab[0]),
         "target": data.Vocabulary(params.vocab[1])
     }
     return params
+
 
 def print_variables(model, pattern, log=True):
     flags = []
@@ -96,7 +81,7 @@ def print_variables(model, pattern, log=True):
             total_size += v.nelement()
 
             if log:
-                print("%s %s" % (name.ljust(60), str(list(v.shape)).rjust(15)))
+                print(f"{name.ljust(60)} {str(list(v.shape)).rjust(15)}")
 
     if log:
         print("Total trainable variables size: %d" % total_size)
@@ -131,7 +116,7 @@ def save_checkpoint(step, epoch, model, optimizer, params):
 
 
 def infer_gpu_num(param_str):
-    result = re.match(r".*device_list=\[(.*?)\].*", param_str)
+    result = re.match(r".*device_list=\[(.*?)].*", param_str)
 
     if not result:
         return 1
@@ -221,15 +206,17 @@ def load_references(pattern):
 
     return list(zip(*references))
 
+
 def to_cuda(features):
     for key in features:
         features[key] = features[key].cuda()
 
     return features
 
-def main(args):
 
-    params = utils.Config.read(args.config, base=args.base_config, data=args.data_config, model=args.model_config, exp=args.exp)
+def main(args):
+    params = utils.Config.read(args.config, base=args.base_config, data=args.data_config, model=args.model_config,
+                               exp=args.exp)
     params = load_vocabulary(params)
 
     # Initialize distributed utility
@@ -333,7 +320,7 @@ def main(args):
 
             if dist.get_rank() == 0 and step % params.log_interval == 0 and counter % params.update_cycle == 0:
                 print("epoch = %d, step = %d, %s (%.3f sec)" %
-                    (epoch + 1, step, log_info, t))
+                      (epoch + 1, step, log_info, t))
 
             if counter % params.update_cycle == 0:
                 if step >= params.train_steps:
@@ -369,7 +356,8 @@ def cli_main():
     if parsed_args.distributed:
         main(parsed_args)
     else:
-        params = utils.Config.read(parsed_args.config, base=parsed_args.base_config, data=parsed_args.data_config, model=parsed_args.model_config, exp=parsed_args.exp)
+        params = utils.Config.read(parsed_args.config, base=parsed_args.base_config, data=parsed_args.data_config,
+                                   model=parsed_args.model_config, exp=parsed_args.exp)
         # Pick a free port
         with socket.socket() as s:
             s.bind(("localhost", 0))

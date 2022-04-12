@@ -1,23 +1,18 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
-import math
 import torch
 import torch.nn as nn
 
-import thualign.utils as utils
 import thualign.modules as modules
-
+import thualign.utils as utils
 from thualign.models.alignment_base import AlignmentModel
+
 
 class AttentionSubLayer(modules.Module):
 
     def __init__(self, params, leaky=False, name="attention"):
-        super(AttentionSubLayer, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.dropout = params.residual_dropout
         self.normalization = params.normalization
@@ -63,7 +58,7 @@ class AttentionSubLayer(modules.Module):
 class FFNSubLayer(modules.Module):
 
     def __init__(self, params, dtype=None, name="ffn_layer"):
-        super(FFNSubLayer, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.dropout = params.residual_dropout
         self.normalization = params.normalization
@@ -92,7 +87,7 @@ class FFNSubLayer(modules.Module):
 class TransformerEncoderLayer(modules.Module):
 
     def __init__(self, params, name="layer"):
-        super(TransformerEncoderLayer, self).__init__(name=name)
+        super().__init__(name=name)
 
         with utils.scope(name):
             self.self_attention = AttentionSubLayer(params)
@@ -108,7 +103,7 @@ class TransformerEncoderLayer(modules.Module):
 class TransformerDecoderLayer(modules.Module):
 
     def __init__(self, params, name="layer"):
-        super(TransformerDecoderLayer, self).__init__(name=name)
+        super().__init__(name=name)
         leaky_self_attn = getattr(params, 'leaky_self_attn', False)
         leaky_encdec_attn = getattr(params, 'leaky_encdec_attn', False)
 
@@ -116,7 +111,7 @@ class TransformerDecoderLayer(modules.Module):
             self.self_attention = AttentionSubLayer(params, leaky=leaky_self_attn,
                                                     name="self_attention")
             self.encdec_attention = AttentionSubLayer(params, leaky=leaky_encdec_attn,
-                                                    name="encdec_attention")
+                                                      name="encdec_attention")
             self.feed_forward = FFNSubLayer(params)
 
     def __call__(self, x, attn_bias, encdec_bias, memory):
@@ -129,7 +124,7 @@ class TransformerDecoderLayer(modules.Module):
 class TransformerEncoder(modules.Module):
 
     def __init__(self, params, name="encoder"):
-        super(TransformerEncoder, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.normalization = params.normalization
 
@@ -156,15 +151,16 @@ class TransformerEncoder(modules.Module):
 class TransformerDecoder(modules.Module):
 
     def __init__(self, params, name="decoder"):
-        super(TransformerDecoder, self).__init__(name=name)
+        super().__init__(name=name)
 
         self.normalization = params.normalization
         self.last_cross = getattr(params, 'last_cross', False)
 
         with utils.scope(name):
             layer_cls = TransformerEncoderLayer if self.last_cross else TransformerDecoderLayer
-            self.layers = nn.ModuleList([layer_cls(params, name="layer_%d" % i) for i in range(params.num_decoder_layers-1)])
-            self.layers.append(TransformerDecoderLayer(params, name="layer_%d" % (params.num_decoder_layers-1)))
+            self.layers = nn.ModuleList(
+                [layer_cls(params, name="layer_%d" % i) for i in range(params.num_decoder_layers - 1)])
+            self.layers.append(TransformerDecoderLayer(params, name="layer_%d" % (params.num_decoder_layers - 1)))
 
             if self.normalization == "before":
                 self.layer_norm = modules.LayerNorm(params.hidden_size)
@@ -178,10 +174,10 @@ class TransformerDecoder(modules.Module):
                 x = layer(x, attn_bias)
             else:
                 x, weights = layer(x, attn_bias, encdec_bias, memory)
-                weights = weights.unsqueeze(1) # b x 1 x h x nq x nk
+                weights = weights.unsqueeze(1)  # b x 1 x h x nq x nk
                 all_weights.append(weights)
 
-        all_weights = torch.cat(all_weights, dim=1) # b x n_layer x h x nq x nk
+        all_weights = torch.cat(all_weights, dim=1)  # b x n_layer x h x nq x nk
         if self.normalization == "before":
             x = self.layer_norm(x)
 
@@ -191,7 +187,7 @@ class TransformerDecoder(modules.Module):
 class TransformerAlign(AlignmentModel):
 
     def __init__(self, params, name="transformer_align"):
-        super(TransformerAlign, self).__init__(params, name=name)
+        super().__init__(params, name=name)
 
         with utils.scope(name):
             self.build_embedding(params)
@@ -231,7 +227,7 @@ class TransformerAlign(AlignmentModel):
         tgt_seq = torch.cat([torch.ones(tgt_seq.shape[0], 1).to(tgt_seq), tgt_seq], dim=1)[:, :-1]
 
         enc_attn_bias = state["enc_attn_bias"]
-        dec_mask = features['target_mask'] # b x n
+        dec_mask = features['target_mask']  # b x n
         dec_attn_bias = self.causal_bias(tgt_seq.shape[1])
 
         targets = torch.nn.functional.embedding(tgt_seq, self.tgt_embedding)
@@ -262,7 +258,7 @@ class TransformerAlign(AlignmentModel):
             features, labels = features
         else:
             labels = features["target"]
-        mask = features["target_mask"] # b x nq
+        mask = features["target_mask"]  # b x nq
         state = self.empty_state(features["target"].shape[0],
                                  labels.device)
         state = self.encode(features, state)
@@ -282,7 +278,7 @@ class TransformerAlign(AlignmentModel):
 
         loss = torch.sum(loss * mask) / torch.sum(mask)
         loss = loss.to(net_output)
-        log_output = "loss: {:.3f}".format(loss)
+        log_output = f"loss: {loss:.3f}"
 
         return loss, log_output
 
@@ -306,13 +302,13 @@ class TransformerAlign(AlignmentModel):
         else:
             tgt_seq = features["target"]
 
-        tgt_mask = features["target_mask"] # b x nq
+        tgt_mask = features["target_mask"]  # b x nq
         state = self.empty_state(features["target"].shape[0],
                                  tgt_seq.device)
         state = self.encode(features, state)
-        logits, state = self.decode(features, state) # b*nq x V
+        logits, state = self.decode(features, state)  # b*nq x V
 
-        pred = logits.argmax(-1).view(tgt_seq.shape[0], -1) # b x n
+        pred = logits.argmax(-1).view(tgt_seq.shape[0], -1)  # b x n
         acc_cnt = ((tgt_seq == pred) * tgt_mask).sum()
         all_cnt = tgt_mask.sum()
 

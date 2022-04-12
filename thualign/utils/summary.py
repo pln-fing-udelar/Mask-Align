@@ -1,13 +1,8 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import queue
 import threading
-import torch
 
 import torch.distributed as dist
 import torch.utils.tensorboard as tensorboard
@@ -60,7 +55,6 @@ def init(log_dir, enable=True):
 
 def scalar(tag, scalar_value, global_step=None, walltime=None,
            write_every_n_steps=100):
-
     if _SUMMARY_WRITER is not None:
         if global_step % write_every_n_steps == 0:
             scalar_value = float(scalar_value)
@@ -71,7 +65,6 @@ def scalar(tag, scalar_value, global_step=None, walltime=None,
 
 def histogram(tag, values, global_step=None, bins="tensorflow", walltime=None,
               max_bins=None, write_every_n_steps=100):
-
     if _SUMMARY_WRITER is not None:
         if global_step % write_every_n_steps == 0:
             values = values.detach().cpu()
@@ -79,14 +72,15 @@ def histogram(tag, values, global_step=None, bins="tensorflow", walltime=None,
                           bins=bins, walltime=walltime, max_bins=max_bins)
             _QUEUE.put(("histogram", kwargs))
 
+
 def figure(tag, figure, global_step=None, close=True, walltime=None,
            write_every_n_steps=100):
-
     if _SUMMARY_WRITER is not None:
         if global_step % write_every_n_steps == 0:
             kwargs = dict(tag=tag, figure=figure, global_step=global_step,
                           close=close, walltime=walltime)
             _QUEUE.put(("figure", kwargs))
+
 
 def close():
     if _SUMMARY_WRITER is not None:

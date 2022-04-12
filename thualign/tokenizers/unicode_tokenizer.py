@@ -1,12 +1,6 @@
-import abc
-import json
-import base64
-import collections
 import regex as re
 
-from typing import List, NoReturn
 from thualign.tokenizers.tokenizer import Tokenizer
-
 
 _RULES = [
     # Open/Initial puncutation
@@ -83,26 +77,26 @@ _TOKEN_PATTERNS = [re.compile(rule[0][0]) for rule in _RULES]
 _TOKEN_REPL = [rule[0][1] for rule in _RULES]
 
 _DETOKEN_PATTERNS = [
-    re.compile(rule[1][0]) if len(rule) == 2 else None for rule in _RULES
-][::-1]
+                        re.compile(rule[1][0]) if len(rule) == 2 else None for rule in _RULES
+                    ][::-1]
 _DETOKEN_REPL = [
-    rule[1][1] if len(rule) == 2 else None for rule in _RULES
-][::-1]
+                    rule[1][1] if len(rule) == 2 else None for rule in _RULES
+                ][::-1]
 
 
 class UnicodeTokenizer(Tokenizer):
 
     def __init__(self, name="unicode_tokenizer"):
-        super(UnicodeTokenizer, self).__init__()
+        super().__init__()
 
-    def encode(self, inp: bytes) -> List[bytes]:
+    def encode(self, inp: bytes) -> list[bytes]:
         inp_str = inp
         for pat, repl in zip(_TOKEN_PATTERNS, _TOKEN_REPL):
             input_str = re.sub(pat, repl, input_str)
 
         return input_str
 
-    def decode(self, inp: List[bytes]) -> bytes:
+    def decode(self, inp: list[bytes]) -> bytes:
         input_str = b" ".join(inp)
 
         for pat, repl in zip(_DETOKEN_PATTERNS, _DETOKEN_REPL):

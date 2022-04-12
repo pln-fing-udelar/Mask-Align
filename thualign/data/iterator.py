@@ -1,12 +1,9 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
-
 import abc
-import time
 import queue
 import threading
-
-from typing import Any, Dict, List, NoReturn, Tuple, Union
+import time
+from typing import Any, NoReturn, Union
 
 
 def _profile(msg: str, enable: bool = True):
@@ -32,9 +29,9 @@ def _unzip(x):
     return list(zip(*x))
 
 
-class _FileWrapper(object):
+class _FileWrapper:
 
-    def __init__(self, buffer: List):
+    def __init__(self, buffer: list):
         self._buffer = buffer
         self._index = 0
 
@@ -58,7 +55,7 @@ class _FileWrapper(object):
             line = b""
         return line
 
-    def readlines(self) -> List[bytes]:
+    def readlines(self) -> list[bytes]:
         return self._buffer
 
     def seek(self, offset: int) -> int:
@@ -66,7 +63,6 @@ class _FileWrapper(object):
 
     def tell(self) -> int:
         return self._index
-
 
 
 class _DatasetWorker(threading.Thread):
@@ -97,7 +93,7 @@ class _DatasetWorker(threading.Thread):
         return self._empty
 
 
-class IteratorBase(object):
+class IteratorBase:
 
     def __init__(self):
         pass
@@ -105,7 +101,7 @@ class IteratorBase(object):
     def __iter__(self) -> "IteratorBase":
         return self
 
-    def state(self) -> Dict:
+    def state(self) -> dict:
         return {}
 
     @abc.abstractmethod
@@ -156,15 +152,14 @@ class _BucketDSIter(IteratorBase):
                     self._bucket_map[i] = idx
                     break
 
-        super(_BucketDSIter, self).__init__()
-
+        super().__init__()
 
     def __iter__(self) -> "_BucketDSIter":
         return self
 
     @_profile("_BucketDSIter", False)
-    def __next__(self) -> Union[List[List[int]],
-                                Tuple[List[List[int]], ...]]:
+    def __next__(self) -> Union[list[list[int]],
+                                tuple[list[list[int]], ...]]:
         try:
             while True:
                 idx = self._get_bucket()
@@ -189,7 +184,7 @@ class _BucketDSIter(IteratorBase):
             if not isinstance(items, tuple):
                 items = (items,)
 
-            max_length = max([len(item) for item in items])
+            max_length = max(len(item) for item in items)
 
             if max_length < self._min_length:
                 continue
@@ -203,7 +198,7 @@ class _BucketDSIter(IteratorBase):
             else:
                 self._buckets[-1].append(items)
 
-    def _get_content(self, idx: int) -> List:
+    def _get_content(self, idx: int) -> list:
         idx = self._priority.pop(idx)
         self._priority.append(idx)
 
@@ -211,17 +206,17 @@ class _BucketDSIter(IteratorBase):
         outs = bucket[:self._batch_sizes[idx]]
         self._buckets[idx] = bucket[self._batch_sizes[idx]:]
 
-        content = tuple([list(item) for item in zip(*outs)])
+        content = tuple(list(item) for item in zip(*outs))
         content = self._pad_batch(content)
 
-        if self._spec.elem_type is List[List[int]]:
+        if self._spec.elem_type is list[list[int]]:
             return self._pad_batch(content)[0]
         else:
             return self._pad_batch(content)
 
-    def _pad_batch(self, batch: tuple) -> List:
+    def _pad_batch(self, batch: tuple) -> list:
         for bat in batch:
-            max_len = max([len(item) for item in bat])
+            max_len = max(len(item) for item in bat)
 
             for seq in bat:
                 for _ in range(len(seq), max_len):
@@ -252,7 +247,7 @@ class _LookupDSIter(IteratorBase):
         self._iterator = iter(dataset._dataset)
 
     @_profile("_LookupDSIter", False)
-    def __next__(self) -> List[int]:
+    def __next__(self) -> list[int]:
         outputs = []
 
         for s in next(self._iterator):
@@ -285,15 +280,14 @@ class _PaddedBatchDSIter(IteratorBase):
         self._iterator = iter(dataset._dataset)
         self._spec = dataset.element_spec
 
-        super(_PaddedBatchDSIter, self).__init__()
-
+        super().__init__()
 
     def __iter__(self) -> "_PaddedBatchDSIter":
         return self
 
     @_profile("_PaddedBatchDSIter", False)
-    def __next__(self) -> Union[List[List[int]],
-                                Tuple[List[List[int]], ...]]:
+    def __next__(self) -> Union[list[list[int]],
+                                tuple[list[list[int]], ...]]:
         bucket = []
 
         try:
@@ -312,17 +306,18 @@ class _PaddedBatchDSIter(IteratorBase):
         for seqs, max_len in zip(bucket, max_lens):
             outputs.append(self._pad_batch(seqs, max_len))
 
-        if self._spec.elem_type is List[List[int]]:
+        if self._spec.elem_type is list[list[int]]:
             return bucket[0]
         else:
             return bucket
 
-    def _pad_batch(self, seqs: List, max_len: int) -> List:
+    def _pad_batch(self, seqs: list, max_len: int) -> list:
         for seq in seqs:
             for _ in range(max_len - len(seq)):
                 seq.append(self._pad)
 
         return seqs
+
 
 class _RepeatDSIter(IteratorBase):
 
@@ -369,8 +364,8 @@ class _TextLineDSIter(IteratorBase):
 
     def __init__(self, dataset: "TextLineDataset"):
         if isinstance(dataset.input_source, str):
-            #self._file = _TextFileWrapper(TextFile(dataset.input_source))
-            #self._file._file.shard(dataset.num_shards, dataset.index)
+            # self._file = _TextFileWrapper(TextFile(dataset.input_source))
+            # self._file._file.shard(dataset.num_shards, dataset.index)
             self._file = open(dataset.input_source)
         else:
             self._file = _FileWrapper(dataset.input_source)
@@ -389,7 +384,7 @@ class _TokenizedLineDSIter(IteratorBase):
         self._iterator = iter(dataset._dataset)
 
     @_profile("_TokenizedLineDSIter", False)
-    def __next__(self) -> List[bytes]:
+    def __next__(self) -> list[bytes]:
         val = self._tokenizer.encode(next(self._iterator))
 
         if self._bos:
@@ -407,7 +402,7 @@ class _ZipDSIter(IteratorBase):
         self._iterators = [iter(ds) for ds in dataset._datasets]
 
     @_profile("_ZipDSIter", False)
-    def __next__(self) -> Tuple:
+    def __next__(self) -> tuple:
         outputs = []
 
         for iterator in self._iterators:

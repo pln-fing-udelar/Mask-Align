@@ -1,6 +1,8 @@
 import argparse
+
 import thualign.utils as utils
 from thualign.utils import alignment
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="calculate acc and aer")
@@ -11,6 +13,7 @@ def parse_args():
     parser.add_argument("align_ref", help="alignment reference")
 
     return parser.parse_args()
+
 
 def main(args):
     refs, poss = utils.parse_refs(args.align_ref)
@@ -32,18 +35,18 @@ def main(args):
                         cur = True
                 correct_tt.append(cur)
             correct.append(correct_tt)
-    
+
     align_correct_t = [list(h & p) for h, p in zip(hyps, poss)]
     align_correct = []
     for align_correct_tt in align_correct_t:
         align_correct_c = []
         for x, y in align_correct_tt:
-            align_correct_c.append(y-1)
+            align_correct_c.append(y - 1)
         align_correct_c = list(set(align_correct_c))
         align_correct.append(align_correct_c)
-    
-    correct_align = [0, 0] # correct/wrong pred
-    wrong_align = [0, 0] # correct/wrong pred
+
+    correct_align = [0, 0]  # correct/wrong pred
+    wrong_align = [0, 0]  # correct/wrong pred
     for align, pred in zip(align_correct, correct):
         false_align = list(set(range(len(pred))) - set(align))
         for i in align:
@@ -58,6 +61,7 @@ def main(args):
                 wrong_align[1] += 1
     print(correct_align)
     print(wrong_align)
+
 
 if __name__ == "__main__":
     main(parse_args())

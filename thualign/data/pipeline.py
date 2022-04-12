@@ -1,14 +1,9 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
-
-import random
-import torch
 import numpy as np
+import torch
 
 from thualign.data.dataset import Dataset, ElementSpec, MapFunc, TextLineDataset
-from thualign.data.vocab import Vocabulary
 from thualign.tokenizers import WhiteSpaceTokenizer
-from typing import Any, Dict, NoReturn, List, Tuple, Union, Callable
 
 
 def _sort_input_file(filename, reverse=True):
@@ -30,7 +25,7 @@ def _sort_input_file(filename, reverse=True):
     return sorted_keys, sorted_inputs
 
 
-class MTPipeline(object):
+class MTPipeline:
 
     @staticmethod
     def get_train_dataset(filenames, params, cpu=False):
@@ -40,7 +35,7 @@ class MTPipeline(object):
         src_dataset = TextLineDataset(filenames[0])
         tgt_dataset = TextLineDataset(filenames[1])
         lab_dataset = TextLineDataset(filenames[1])
-        
+
         src_dataset = src_dataset.shard(torch.distributed.get_world_size(),
                                         torch.distributed.get_rank())
         tgt_dataset = tgt_dataset.shard(torch.distributed.get_world_size(),
@@ -62,7 +57,6 @@ class MTPipeline(object):
                                      tgt_vocab[params.unk])
 
         dataset = Dataset.zip((src_dataset, tgt_dataset, lab_dataset))
-
 
         def bucket_boundaries(max_length, min_length=8, step=8):
             x = min_length
@@ -203,16 +197,16 @@ class MTPipeline(object):
         return sorted_keys, dataset
 
 
-class LMPipeline(object):
+class LMPipeline:
 
     @staticmethod
     def get_train_dataset(filename, params):
         vocab = params.vocabulary["source"]
 
-        #src_dataset = TextLineDataset(filename,
+        # src_dataset = TextLineDataset(filename,
         #                              torch.distributed.get_world_size(),
         #                              torch.distributed.get_rank())
-        #lab_dataset = TextLineDataset(filename,
+        # lab_dataset = TextLineDataset(filename,
         #                              torch.distributed.get_world_size(),
         #                              torch.distributed.get_rank())
         src_dataset = TextLineDataset(filename)
@@ -274,7 +268,7 @@ class LMPipeline(object):
         return dataset
 
 
-class AlignmentPipeline(object):
+class AlignmentPipeline:
 
     @staticmethod
     def get_train_dataset(filenames, params):
@@ -293,7 +287,7 @@ class AlignmentPipeline(object):
         src_eos = params.eos if getattr(params, "src_eos", False) else None
         tgt_bos = params.bos if getattr(params, "tgt_bos", False) else None
         tgt_eos = params.eos if getattr(params, "tgt_eos", False) else None
-        
+
         src_dataset = src_dataset.tokenize(WhiteSpaceTokenizer(),
                                            src_bos, src_eos)
         tgt_dataset = tgt_dataset.tokenize(WhiteSpaceTokenizer(),
@@ -343,15 +337,15 @@ class AlignmentPipeline(object):
                 "target": tgt_seq,
                 "target_mask": tgt_mask
             }
-            
+
             return features
 
         map_obj = MapFunc(map_fn, \
-            ElementSpec("Array", "{key: [None, None, None, None]}"))
+                          ElementSpec("Array", "{key: [None, None, None, None]}"))
         dataset = dataset.map(map_obj)
         dataset = dataset.background()
         return dataset
-        
+
     @staticmethod
     def get_infer_dataset(filenames, params):
         src_vocab = params.vocabulary["source"]
@@ -369,7 +363,7 @@ class AlignmentPipeline(object):
         src_eos = params.eos if getattr(params, "src_eos", False) else None
         tgt_bos = params.bos if getattr(params, "tgt_bos", False) else None
         tgt_eos = params.eos if getattr(params, "tgt_eos", False) else None
-        
+
         src_dataset = src_dataset.tokenize(WhiteSpaceTokenizer(),
                                            src_bos, src_eos)
         tgt_dataset = tgt_dataset.tokenize(WhiteSpaceTokenizer(),
@@ -399,11 +393,10 @@ class AlignmentPipeline(object):
                 "target": tgt_seq,
                 "target_mask": tgt_mask
             }
-            
+
             return features
 
-        map_obj = MapFunc(map_fn, \
-            ElementSpec("Array", "{key: [None, None, None, None]}"))
+        map_obj = MapFunc(map_fn, ElementSpec("Array", "{key: [None, None, None, None]}"))
         dataset = dataset.map(map_obj)
         dataset = dataset.background()
         return dataset

@@ -1,9 +1,5 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import math
 
@@ -29,12 +25,12 @@ def closest_length(candidate, references):
 
 
 def shortest_length(references):
-    return min([len(ref) for ref in references])
+    return min(len(ref) for ref in references)
 
 
 def modified_precision(candidate, references, n):
     tngrams = len(candidate) + 1 - n
-    counts = Counter([tuple(candidate[i:i+n]) for i in range(tngrams)])
+    counts = Counter([tuple(candidate[i:i + n]) for i in range(tngrams)])
 
     if len(counts) == 0:
         return 0, 0
@@ -42,7 +38,7 @@ def modified_precision(candidate, references, n):
     max_counts = {}
     for reference in references:
         rngrams = len(reference) + 1 - n
-        ngrams = [tuple(reference[i:i+n]) for i in range(rngrams)]
+        ngrams = [tuple(reference[i:i + n]) for i in range(rngrams)]
         ref_counts = Counter(ngrams)
         for ngram in counts:
             mcount = 0 if ngram not in max_counts else max_counts[ngram]
@@ -101,7 +97,7 @@ def bleu(trans, refs, bp="closest", smooth=False, n=4, weights=None):
     if weights:
         if len(weights) != n:
             raise ValueError("len(weights) != n: invalid weight number")
-        log_precision = sum([bleu_n[i] * weights[i] for i in range(n)])
+        log_precision = sum(bleu_n[i] * weights[i] for i in range(n))
     else:
         log_precision = sum(bleu_n) / float(n)
 

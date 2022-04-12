@@ -1,10 +1,5 @@
 #!/usr/bin/env python
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import argparse
 import collections
@@ -56,7 +51,7 @@ def save_vocab(name, vocab):
     with open(name, "wb") as f:
         for word in words:
             f.write(word)
-            f.write("\n".encode("ascii"))
+            f.write(b"\n")
 
 
 def main(args):

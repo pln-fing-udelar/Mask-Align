@@ -1,10 +1,6 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 # Modified from torch.nn.utils.convert_parameters.py
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import torch
 

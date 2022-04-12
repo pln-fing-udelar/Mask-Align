@@ -1,9 +1,5 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import math
 
@@ -16,7 +12,7 @@ def global_norm_clipper(value):
         scale = value / grad_norm
 
         gradients = [grad.data.mul_(scale)
-            if grad is not None else None for grad in gradients]
+                     if grad is not None else None for grad in gradients]
 
         return False, gradients
 

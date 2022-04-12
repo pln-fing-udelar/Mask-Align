@@ -1,13 +1,9 @@
-# coding=utf-8
 # Copyright 2021-Present The THUAlign Authors
 # Modified from TensorFlow (tf.name_scope)
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
-import re
 import contextlib
+import re
 
 # global variable
 _NAME_STACK = ""
