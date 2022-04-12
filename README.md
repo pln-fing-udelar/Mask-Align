@@ -23,15 +23,15 @@ conda activate mask-align
 
 ## Training Mask-Align in English-Spanish
 
-TODO: provde a pretrained model.
+TODO: provide a pretrained model.
 
 Follow these steps to train a Mask-Align model to align translations between English and Spanish.
 
 ### Prepare the corpus
 
-1. Download the [Europal Spanish-English parallel corpus](https://www.statmt.org/europarl/v7/es-en.tgz).
+1. Download the [Europarl Spanish-English parallel corpus](https://www.statmt.org/europarl/v7/es-en.tgz).
 2. Remove the sentences that don't form a pair (the sentences that correspond with an empty line).
-3. Remove sencences of length 1.
+3. Remove sentences of length 1.
 4. Remove sentences that contain tags (characters "<" and ">").
 5. Split the corpus into test, train and val. A good size can be 2000 sentences for test and 2000 for val. Name the
    files `corpus.es`, `validacion.es`, `test.es`, `corpus.en`, `validacion.en` and `test.en`.
@@ -58,14 +58,14 @@ Note you need a computer with a CUDA-capable GPU to train the model.
 1. In the config file [`thualign/configs/user/spanish.config`](thualign/configs/user/spanish.config), specify the
    location of the following files:
 
-- `corpus.32k.es.shuf`
-- `corpus.32k.en.shuf`
-- `validation.32k.es`
-- `validation.32k.en`
-- `test.32k.es`
-- `test.32k.en`
-- `es.vocab`
-- `en.vocab`
+   * `corpus.32k.es.shuf`
+   * `corpus.32k.en.shuf`
+   * `validation.32k.es`
+   * `validation.32k.en`
+   * `test.32k.es`
+   * `test.32k.en`
+   * `es.vocab`
+   * `en.vocab`
 
 2. In `device_list` specify the number of GPUs.
 3. In `batch_size` choose the highest value that doesn't make the training stop due to lack of memory (try different
@@ -74,7 +74,7 @@ Note you need a computer with a CUDA-capable GPU to train the model.
 5. Run:
 
    ```bash
-   bash thualign/bin/train.sh -s spanish
+   ./thualign/bin/train.sh -s spanish
    ```
 
 6. The model is saved in a folder created in the root directory of the repository.
