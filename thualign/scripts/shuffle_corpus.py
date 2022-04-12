@@ -1,21 +1,17 @@
 #!/usr/bin/env python
 # Copyright 2021-Present The THUAlign Authors
-
-
 import argparse
 
 import numpy
 
 
-def parseargs():
+def parse_args():
     parser = argparse.ArgumentParser(description="Shuffle corpuses")
-
     parser.add_argument("--corpus", nargs="+", required=True,
                         help="input corpora")
     parser.add_argument("--suffix", type=str, default="shuf",
                         help="Suffix of output files")
     parser.add_argument("--seed", type=int, help="Random seed")
-
     return parser.parse_args()
 
 
@@ -46,4 +42,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    main(parseargs())
+    main(parse_args())

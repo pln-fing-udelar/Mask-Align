@@ -34,7 +34,7 @@ Follow these steps to train a Mask-Align model to align translations between Eng
 3. Remove sentences of length 1.
 4. Remove sentences that contain tags (characters "<" and ">").
 5. Split the corpus into test, train and val. A good size can be 2000 sentences for test and 2000 for val. Name the
-   files `corpus.es`, `validacion.es`, `test.es`, `corpus.en`, `validacion.en` and `test.en`.
+   files `corpus.es`, `validation.es`, `test.es`, `corpus.en`, `validation.en` and `test.en`.
 7. Run the following commands, to learn the vocabulary, tokenize the sentences, and shuffle the corpus:
 
   ```bash
@@ -82,6 +82,21 @@ Note you need a computer with a CUDA-capable GPU to train the model.
    ```
 
 6. The model is saved in a folder created in the root directory of the repository.
+
+### Test the alignments
+
+1. Run:
+
+   ```bash
+   ./thualign/bin/generate.sh -s spanish -gvt
+   ``` 
+
+2. The alignments are generated in `test/alignments.txt`, where the model was saved.
+3. To see the alignments in an interactive way, run:
+
+   ```bash
+   ./thualign/scripts/visualize.py spanish/output/test/alignment_vizdata.pt
+   ```
 
 ## Generating the answer alignments
 

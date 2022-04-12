@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # Copyright 2021-Present The THUAlign Authors
-
 import argparse
 import os
 import time
