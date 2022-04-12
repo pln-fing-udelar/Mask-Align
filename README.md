@@ -47,9 +47,13 @@ Follow these steps to train a Mask-Align model to align translations between Eng
   spm_encode --model=es.model --output_format=piece < validation.es > validation.32k.es
   spm_encode --model=es.model --output_format=piece < test.es > test.32k.es
   python thualign/scripts/shuffle_corpus.py --corpus corpus.32k.es corpus.32k.en
+  sed -i -e 's/<s>/<eos>/' -e 's/<s\/>/<pad>/' corpus.32k.en
+  sed -i -e 's/<s>/<eos>/' -e 's/<s\/>/<pad>/' validation.32k.en
+  sed -i -e 's/<s>/<eos>/' -e 's/<s\/>/<pad>/' test.32k.en
+  sed -i -e 's/<s>/<eos>/' -e 's/<s\/>/<pad>/' corpus.32k.es
+  sed -i -e 's/<s>/<eos>/' -e 's/<s\/>/<pad>/' validation.32k.es
+  sed -i -e 's/<s>/<eos>/' -e 's/<s\/>/<pad>/' test.32k.es
   ```
-
-- In the vocabulary files, replace the tags `<s>` and `</s>` for `<eos>` and `<pad>`.
 
 ### Train the model
 
