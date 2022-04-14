@@ -4,6 +4,7 @@ dependencies:
   -          nltk=3.6.2
   -          numpy
   -          python=3.9
+  -          csvkit=1.0.7
   - pytorch::pytorch=1.8.1
   -          regex=2021.7.6
   -          sentencepiece
