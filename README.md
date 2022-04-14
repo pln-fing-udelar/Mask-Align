@@ -26,7 +26,7 @@ conda activate mask-align
 We need a trained Mask-Align model to align translations between English and Spanish. To download the pretrained model, run the following commands:
 
 ```bash
-mkdir spanish-output spanish-output/output
+mkdir -p spanish-output/output
 curl -o spanish-output/output/model-1.pt https://www.fing.edu.uy/owncloud/index.php/s/siRkUqxnwmdtfaJ/download
 ```
 
@@ -129,7 +129,7 @@ The following three files are generated:
 
 ### Generate the final merged CSV file
 
-Finally, run these commands to generate the `newsqa-es.csv` file, a new version of `newsqa_filtered.csv` which has the columns with the answers in spanish.
+Finally, run these commands to generate the `newsqa-es.csv` file, a new version of `newsqa_filtered.csv` which has the columns with the answers in Spanish.
 
 ```bash
 sed -i '1ianswer_index_esp' output-indexes.txt
