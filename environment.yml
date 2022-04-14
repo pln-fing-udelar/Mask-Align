@@ -1,5 +1,6 @@
 name: mask-align
 dependencies:
+  -          csvkit=1.0.7
   -          cudatoolkit=10.2
   -          nltk=3.6.2
   -          numpy

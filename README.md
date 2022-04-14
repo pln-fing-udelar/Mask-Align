@@ -23,9 +23,14 @@ conda activate mask-align
 
 ## Training Mask-Align in English-Spanish
 
-TODO: provide a pretrained model.
+We need a trained Mask-Align model to align translations between English and Spanish. To download the pretrained model, run the following commands:
 
-Follow these steps to train a Mask-Align model to align translations between English and Spanish.
+```bash
+mkdir -p spanish-output/output
+curl -o spanish-output/output/model-1.pt https://www.fing.edu.uy/owncloud/index.php/s/siRkUqxnwmdtfaJ/download
+```
+
+Alternatively, follow these steps to train it yourself.
 
 ### Prepare the Corpus
 
@@ -88,7 +93,7 @@ Note you need a computer with a CUDA-capable GPU to train the model.
 1. Run:
 
    ```bash
-   ./thualign/bin/generate.sh -s spanish -gvt
+   ./thualign/bin/test.sh -s spanish -gvt
    ``` 
 
 2. The alignments are generated in `test/alignments.txt`, where the model was saved.
@@ -101,7 +106,7 @@ Note you need a computer with a CUDA-capable GPU to train the model.
 ## Generating the Answer Alignments for NewsQA-es
 
 Run these commands to generate the answer alignments for the NewsQA-es dataset. You should have a trained Mask-Align 
-model and the `newsqa.csv` file.
+model and have the `newsqa.csv` file.
 
 ```bash
 ./scripts/generate-alignments/remove_bad_rows.py
@@ -122,4 +127,11 @@ The following three files are generated:
 * `output-answers.txt`: the answers in Spanish (in plain text).  
 * `output-sentences.txt`: the sentences in Spanish (not tokenized).
 
-TODO: how to get the final merged CSV file?
+### Generate the final merged CSV file
+
+Finally, run these commands to generate the `newsqa-es.csv` file, a new version of `newsqa_filtered.csv` which has the columns with the answers in Spanish.
+
+```bash
+sed -i '1ianswer_index_esp' output-indexes.txt
+csvjoin -y 0 newsqa_filtered.csv output-indexes.txt  > newsqa-es.csv
+```
