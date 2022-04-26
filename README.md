@@ -17,7 +17,7 @@ cd Mask-Align/
 Then, using [Conda](https://docs.conda.io/en/latest/index.html), run:
 
 ```bash
-conda env update
+conda env create
 conda activate mask-align
 ```
 
@@ -98,3 +98,4 @@ The following four files are generated:
 * `output-answers.txt`: the answers in Spanish (in plain text).  
 * `output-sentences.txt`: the sentences in Spanish (not tokenized).
 * `newsqa-es.csv`: a new version of `newsqa_filtered.csv` which has the columns with the answers in Spanish.
+
