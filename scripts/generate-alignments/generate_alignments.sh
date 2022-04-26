@@ -10,3 +10,5 @@ mv test.32k.en test.32k.es answers.en vocab.32k.es.txt vocab.32k.en.txt corpus-e
 ./thualign/bin/generate.sh -s spanish -o output.txt
 spm_decode --model=es.model --input_format=piece < output.txt > output-plain.txt
 python ./scripts/generate-alignments/output_brackets_to_indexes.py
+sed -i '1ianswer_index_esp' output-indexes.txt
+csvjoin -y 0 newsqa_filtered.csv output-indexes.txt  > newsqa-es.csv

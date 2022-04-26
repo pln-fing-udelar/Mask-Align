@@ -34,8 +34,7 @@ Alternatively, follow these steps to train it yourself.
 
 ### Prepare the Corpus
 
-1. Download the [Europarl Spanish-English parallel corpus](https://www.statmt.org/europarl/v7/es-en.tgz).
-2. Run the following script to do some preprocessing, learn the vocabulary, tokenize the sentences, and split the corpus:
+Run the following script to download the [Europarl Spanish-English parallel corpus](https://www.statmt.org/europarl/v7/es-en.tgz), do some preprocessing, learn the vocabulary, tokenize the sentences, and split the corpus:
 
   ```bash
 ./scripts/train-mask-align/preprocess_europarl.sh
@@ -93,17 +92,9 @@ model and have the `newsqa.csv` file.
 ./scripts/generate-alignments/generate_alignments.sh
 ```
 
-The following three files are generated:  
+The following four files are generated:  
 
 * `output-indexes.txt`: the indexes of the answers in Spanish.  
 * `output-answers.txt`: the answers in Spanish (in plain text).  
 * `output-sentences.txt`: the sentences in Spanish (not tokenized).
-
-### Generate the final merged CSV file
-
-Finally, run these commands to generate the `newsqa-es.csv` file, a new version of `newsqa_filtered.csv` which has the columns with the answers in Spanish.
-
-```bash
-sed -i '1ianswer_index_esp' output-indexes.txt
-csvjoin -y 0 newsqa_filtered.csv output-indexes.txt  > newsqa-es.csv
-```
+* `newsqa-es.csv`: a new version of `newsqa_filtered.csv` which has the columns with the answers in Spanish.
