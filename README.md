@@ -17,7 +17,7 @@ cd Mask-Align/
 Then, using [Conda](https://docs.conda.io/en/latest/index.html), run:
 
 ```bash
-conda env update
+conda env create
 conda activate mask-align
 ```
 
