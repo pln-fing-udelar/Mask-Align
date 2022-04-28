@@ -87,6 +87,17 @@ Note you need a computer with a CUDA-capable GPU to train the model.
 
 ### Adjust threshold and calculate exact match
 
+A threshold is used in the Mask-Align algorithm to decide which words are included in the alignment of the answers and which ones aren't. To calculate the optimal value for this treshold you can run the following script:
+
+```bash
+./scripts/calculate-threshold-and-em/calculate_threshold.sh
+```
+
+Also, if you wish to test the alignment of answers in the NewsQA dataset, you can run the following script to calculate the Exact Match measure over some anotated examples:
+
+```bash
+./scripts/calculate-threshold-and-em/calculate_em.sh
+```
 
 ## Generating the Answer Alignments for NewsQA-es
 
