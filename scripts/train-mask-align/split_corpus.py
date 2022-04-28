@@ -15,6 +15,8 @@ def main() -> None:
             open("europarl-v7.es-en.es", encoding="utf-8") as file1, \
             open("europarl-v7.es-en.en", encoding="utf-8") as file2:
 
+        random.seed(10)
+
         for line1, line2 in zip(file1, file2):
             line1 = line1.lower()
             line2 = line2.lower()
