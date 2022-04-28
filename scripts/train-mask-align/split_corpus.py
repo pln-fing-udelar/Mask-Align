@@ -29,10 +29,10 @@ def main() -> None:
                     and 1 < num_words1 < 120 \
                     and 1 < num_words2 < 120:
                 random_number = random.uniform(0, 1)
-                if random_number < 0.9989:
+                if random_number < 0.9978:
                     corpus_es.write(line1)
                     corpus_en.write(line2)
-                elif random_number < 0.9978:
+                elif random_number < 0.9989:
                     validation_es.write(line1)
                     validation_en.write(line2)
                 else:
