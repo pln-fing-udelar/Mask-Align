@@ -24,3 +24,7 @@ checkpoints
 # Experimental Folder
 exp
 *.html
+
+# Data and output files:
+/corpus-es
+/spanish-output
