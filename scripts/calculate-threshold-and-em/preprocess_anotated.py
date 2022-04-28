@@ -2,9 +2,10 @@ import os
 import random
 import re
 import csv
+import sys
 
-def main() -> None:
-    csv_input = open("news-qa-questions-test.csv", "r", encoding="utf8")
+def main(input_file) -> None:
+    csv_input = open(input_file, "r", encoding="utf8")
     output_src = open("sentences.en", "w", encoding="utf8")
     output_tgt = open("sentences.es", "w", encoding="utf8")
     output_ans_idx_en = open("answers_indexes.en", "w", encoding="utf8")
@@ -33,4 +34,4 @@ def main() -> None:
     output_ans_idx_es.close()
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1])

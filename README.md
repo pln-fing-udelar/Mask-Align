@@ -85,6 +85,9 @@ Note you need a computer with a CUDA-capable GPU to train the model.
    ./thualign/scripts/visualize.py spanish-output/output/test/alignment_vizdata.pt
    ```
 
+### Adjust threshold and calculate exact match
+
+
 ## Generating the Answer Alignments for NewsQA-es
 
 Run the following script to generate the answer alignments for the NewsQA-es dataset. You should have a trained
