@@ -1,8 +1,9 @@
 # Mask-Align for NewsQA-es
 
 This repo forks [THUNLP-MT/Mask-Align](https://github.com/THUNLP-MT/Mask-Align) to adapt it to translate
-the [NewsQA](https://www.microsoft.com/en-us/research/project/newsqa-dataset/) reading comprehension dataset to Spanish.
-Mask-Align is an algorithm that aligns translations to a token level, which allows us to find the English answer span
+the [NewsQA](https://www.microsoft.com/en-us/research/project/newsqa-dataset/) reading comprehension dataset to Spanish
+(see [the NewsQA-es repo](https://github.com/pln-fing-udelar/newsqa-es) for more info). Mask-Align is an algorithm 
+that aligns translations to a token level, which allows us to find the English answer span
 inside the translated Spanish text.
 
 ## Setup
@@ -36,9 +37,9 @@ Alternatively, follow these steps to train it yourself.
 
 Run the following script to download the [Europarl Spanish-English parallel corpus](https://www.statmt.org/europarl/v7/es-en.tgz), do some preprocessing, learn the vocabulary, tokenize the sentences, and split the corpus:
 
-  ```bash
+```bash
 ./scripts/train-mask-align/preprocess_europarl.sh
-  ```
+```
 
 ### Train the Model
 
@@ -66,7 +67,8 @@ Note you need a computer with a CUDA-capable GPU to train the model.
    ./thualign/bin/train.sh -s spanish
    ```
 
-6. The model is saved in a folder created in the root directory of the repository.
+6. The model checkpoints are saved under `spanish-output/output/`. The latest one has the highest number in the 
+   filename. When testing or generating, the codebase selects the best or the latest model automatically.
 
 ### Test the alignments
 
@@ -76,26 +78,25 @@ Note you need a computer with a CUDA-capable GPU to train the model.
    ./thualign/bin/test.sh -s spanish -gvt
    ``` 
 
-2. The alignments are generated in `test/alignments.txt`, where the model was saved.
+2. The alignments are generated in `spanish-output/output/test/alignments.txt`.
 3. To see the alignments in an interactive way, run:
 
    ```bash
-   ./thualign/scripts/visualize.py spanish/output/test/alignment_vizdata.pt
+   ./thualign/scripts/visualize.py spanish-output/output/test/alignment_vizdata.pt
    ```
 
 ## Generating the Answer Alignments for NewsQA-es
 
-Run the following script to generate the answer alignments for the NewsQA-es dataset. You should have a trained Mask-Align 
-model and have the `newsqa.csv` file.
+Run the following script to generate the answer alignments for the NewsQA-es dataset. You should have a trained
+Mask-Align model and have the `newsqa.csv` file.
 
 ```bash
 ./scripts/generate-alignments/generate_alignments.sh
 ```
 
-The following four files are generated:  
+The following 4 files are going to be generated:  
 
 * `output-indexes.txt`: the indexes of the answers in Spanish.  
 * `output-answers.txt`: the answers in Spanish (in plain text).  
 * `output-sentences.txt`: the sentences in Spanish (not tokenized).
 * `newsqa-es.csv`: a new version of `newsqa_filtered.csv` which has the columns with the answers in Spanish.
-
