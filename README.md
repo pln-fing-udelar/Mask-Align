@@ -88,13 +88,13 @@ Note you need a computer with a CUDA-capable GPU to train the model.
 ## Generating the Answer Alignments for NewsQA-es
 
 Run the following script to generate the answer alignments for the NewsQA-es dataset. You should have a trained
-Mask-Align model and have the `newsqa.csv` file.
+Mask-Align model and have the `corpus-es/newsqa.csv` file.
 
 ```bash
 ./scripts/generate-alignments/generate_alignments.sh
 ```
 
-The following 4 files are going to be generated:  
+The following 4 files are going to be generated under `corpus-es/`:  
 
 * `output-indexes.txt`: the indexes of the answers in Spanish.  
 * `output-answers.txt`: the answers in Spanish (in plain text).  
