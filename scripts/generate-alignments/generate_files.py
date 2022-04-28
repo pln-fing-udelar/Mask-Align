@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # This script is used to generate the following files (using the csv file newsqa_filtered.csv):
-#   - test.en, test.es:   they contain the sentences of the corpus
+#   - sentences.en, sentences.es:   they contain the sentences of the corpus
 #   - answers.en.txt:   it contains the answer in plain text for each of the sentences
 #   - answers-indexes.en.txt:   it contains the index of the answer for each of the sentences
 import csv
@@ -14,8 +14,8 @@ def extract_first_answer(text: str) -> str:
 
 def main() -> None:
     with open("newsqa_filtered.csv", encoding="utf8") as csv_input, \
-            open("test.en", "w", encoding="utf8") as output_src, \
-            open("test.es", "w", encoding="utf8") as output_tgt, \
+            open("sentences.en", "w", encoding="utf8") as output_src, \
+            open("sentences.es", "w", encoding="utf8") as output_tgt, \
             open("answers-indexes.en.txt", "w", encoding="utf8") as output_ans_idx_en, \
             open("answers.en.txt", "w", encoding="utf8") as output_ans_en:
         csv_reader = iter(csv.reader(csv_input))

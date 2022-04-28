@@ -69,4 +69,4 @@ def main(sent_untok_filename: str, sent_tok_filename: str, ans_idx_untok_filenam
 
 
 if __name__ == "__main__":
-    main("test.en", "test.32k.en", "answers-indexes.en.txt", "answers.en", "answers.32k.en.txt", "answers.en.txt")
+    main("sentences.en", "sentences.32k.en", "answers-indexes.en.txt", "answers.en", "answers.32k.en.txt", "answers.en.txt")

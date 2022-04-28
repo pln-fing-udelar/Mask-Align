@@ -125,7 +125,7 @@ def gen_align(params):
         model.load_state_dict(state["model"])
 
         get_infer_dataset = data.AlignmentPipeline.get_infer_dataset
-        dataset = get_infer_dataset(params.test_input, params)
+        dataset = get_infer_dataset(params.alignment_input, params)
 
         dataset = torch.utils.data.DataLoader(dataset, batch_size=None)
         iterator = iter(dataset)
@@ -136,13 +136,13 @@ def gen_align(params):
 
         extract_params = alignment_utils.get_extract_params(params)
 
-        print(f"src_file: {os.path.abspath(params.test_input[0])}\n"
-              f"tgt_file: {os.path.abspath(params.test_input[1])}\n"
+        print(f"src_file: {os.path.abspath(params.alignment_input[0])}\n"
+              f"tgt_file: {os.path.abspath(params.alignment_input[1])}\n"
               f"ans_file: {os.path.abspath(params.test_answers)}\n"
               f"alignment_output: {os.path.abspath(params.alignment_output)}")
 
-        src_file = open(params.test_input[0], encoding="utf8")
-        tgt_file = open(params.test_input[1], encoding="utf8")
+        src_file = open(params.alignment_input[0], encoding="utf8")
+        tgt_file = open(params.alignment_input[1], encoding="utf8")
 
         ans_file = open(params.test_answers, encoding="utf8")
 
