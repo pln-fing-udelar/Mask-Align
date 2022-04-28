@@ -1,12 +1,14 @@
 name: mask-align
 dependencies:
-  -          csvkit=1
-  -          cudatoolkit=10.2
-  -          nltk=3.6.2
-  -          numpy
-  -          python=3.9
-  - pytorch::pytorch=1.8.1
-  -          regex=2021.7.6
-  -          sentencepiece
-  -          six=1.15.0
-  -          tensorflow=2.5.0
+  - pip:
+    -            pyecharts==1.7.1
+  -              csvkit=1
+  -              cudatoolkit=10.2
+  -              nltk=3.6
+  -              numpy
+  -              python=3.9
+  -     pytorch::pytorch=1.8.1
+  -              regex=2021.7.6
+  - conda-forge::remi=2022.3.7
+  -              sentencepiece
+  -              tensorflow=2.5
