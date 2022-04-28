@@ -57,4 +57,5 @@ if [ "x" = "x$CONFIG" ]; then
 fi
 
 echo "running $CONFIG"
-python "$CLI_DIR"/inferrer.py --config "$CONFIG" --exp "$EXP" "$suffix"
+# shellcheck disable=SC2086
+python "$CLI_DIR"/inferrer.py --config "$CONFIG" --exp "$EXP" $suffix
