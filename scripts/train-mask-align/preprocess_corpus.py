@@ -11,42 +11,41 @@ def main() -> None:
             open("validation.es", "w", encoding="utf-8") as validation_es, \
             open("validation.en", "w", encoding="utf-8") as validation_en, \
             open("test.es", "w", encoding="utf-8") as test_es, \
-            open("test.en", "w", encoding="utf-8") as test_en:
-        with open("europarl-v7.es-en.es", encoding="utf-8") as file:
-            data1 = file.readlines()
-        with open("europarl-v7.es-en.en", encoding="utf-8") as file:
-            data2 = file.readlines()
+            open("test.en", "w", encoding="utf-8") as test_en, \
+            open("europarl-v7.es-en.es", encoding="utf-8") as file1, \
+            open("europarl-v7.es-en.en", encoding="utf-8") as file2:
 
         min_word = 999999
         min_char = 999999
         max_word = 0
         max_char = 0
 
-        for i in range(min(len(data1), len(data2))):
-            num_words = len(data1[i].split())
-            if num_words > max_word:
-                max_word = num_words
-            if len(data1[i]) > max_char:
-                max_char = len(data1[i])
-            if num_words < min_word:
-                min_word = num_words
-            if len(data1[i]) < min_char:
-                min_char = len(data1[i])
-            if re.search(r"\w+", data1[i]) \
-                    and re.search(r"\w+", data1[i]) \
-                    and "<" not in data1[i] \
-                    and "<" not in data2[i] \
+        for line1, line2 in zip(file1, file2):
+            line1 = line1.lower()
+            line2 = line2.lower()
+
+            num_words = len(line1.split())
+
+            max_word = max(num_words, max_word)
+            max_char = max(len(line1), max_char)
+            min_word = min(num_words, min_word)
+            min_char = min(len(line1), min_char)
+
+            if re.search(r"\w+", line1) \
+                    and re.search(r"\w+", line1) \
+                    and "<" not in line1 \
+                    and "<" not in line2 \
                     and 1 < num_words < 120:
                 random_number = random.uniform(0, 1)
                 if random_number < 0.85:
-                    corpus_es.write(data1[i].lower())
-                    corpus_en.write(data2[i].lower())
+                    corpus_es.write(line1)
+                    corpus_en.write(line2)
                 elif random_number < 0.95:
-                    validation_es.write(data1[i].lower())
-                    validation_en.write(data2[i].lower())
+                    validation_es.write(line1)
+                    validation_en.write(line2)
                 else:
-                    test_es.write(data1[i].lower())
-                    test_en.write(data2[i].lower())
+                    test_es.write(line1)
+                    test_en.write(line2)
 
         print(max_char)
         print(max_word)
