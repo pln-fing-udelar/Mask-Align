@@ -17,7 +17,7 @@ import thualign.utils.alignment as alignment_utils
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate alignments neural alignment models",
-        usage="inferrer.py [<args>] [-h | --help]"
+        usage="infer_fast.py [<args>] [-h | --help]"
     )
     # test args
     parser.add_argument("--alignment-output", type=str, help="path to save generated alignments")

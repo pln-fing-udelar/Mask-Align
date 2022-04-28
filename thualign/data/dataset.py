@@ -148,8 +148,7 @@ class BucketDataset(Dataset):
                  batch_sizes: list[int], pad: int = 0, min_length: int = -1,
                  max_length: int = 10000):
         if not self._check_type(dataset.element_spec):
-            raise ValueError("The input dataset must produces an example of "
-                             "`List[int]` or `Tuple[List[int], ...]`")
+            raise ValueError("The input dataset must produce examples of type `list[int]` or `tuple[list[int], ...]`")
 
         self._dataset = dataset
         self._pad = pad
@@ -164,7 +163,7 @@ class BucketDataset(Dataset):
             _elem_type = list[list[int]]
             _elem_shape = "[None, None]"
         else:
-            # Tuple[List[int], ...] -> Tuple[List[List[int]], ...]
+            # tuple[list[int], ...] -> tuple[list[list[int]], ...]
             args = _elem_spec.elem_type.__args__
             args = [list[t] for t in args]
             _elem_type = tuple[tuple(args)]
@@ -186,10 +185,9 @@ class BucketDataset(Dataset):
         return [self._dataset]
 
     def _check_type(self, elem_spec) -> bool:
-        if elem_spec.elem_type is list[int]:
+        if elem_spec.elem_type == list[int]:
             return True
-        elif not isinstance(elem_spec.elem_type,
-                            type(tuple[list[int], ...])):
+        elif not isinstance(elem_spec.elem_type, type(tuple[list[int], ...])):
             return False
         else:
             args = elem_spec.elem_type.__args__
@@ -198,7 +196,7 @@ class BucketDataset(Dataset):
                 return False
 
             for t in args:
-                if t is not list[int]:
+                if t != list[int]:
                     return False
 
             return True
@@ -242,8 +240,7 @@ class BucketDataset(Dataset):
         dataset = datasets[0]
 
         if not self._check_type(dataset.element_spec):
-            raise ValueError("The input dataset must produces an example of "
-                             "`List[int]` or `Tuple[List[int], ...]`")
+            raise ValueError("The input dataset must produce examples of type `list[int]` or `tuple[list[int], ...]`")
 
         self._dataset = dataset
 
@@ -253,7 +250,7 @@ class BucketDataset(Dataset):
             _elem_type = list[list[int]]
             _elem_shape = "[None, None]"
         else:
-            # Tuple[List[int], ...] -> Tuple[List[List[int]], ...]
+            # tuple[list[int], ...] -> tuple[list[list[int]], ...]
             args = _elem_spec.elem_type.__args__
             args = [list[t] for t in args]
             _elem_type = tuple[tuple(args)]
@@ -271,9 +268,8 @@ class LookupDataset(Dataset):
 
     def __init__(self, dataset: Dataset, vocabulary: Vocabulary,
                  unk_id: int = -1):
-        if dataset.element_spec.elem_type is not list[bytes]:
-            raise ValueError("The input dataset must produces an example of "
-                             "`List[bytes]`.")
+        if dataset.element_spec.elem_type != list[bytes]:
+            raise ValueError("The input dataset must produce examples of type `list[bytes]`.")
         self._dataset = dataset
         self._vocab = vocabulary
         self._unk_id = unk_id
@@ -352,7 +348,7 @@ class PaddedBatchDataset(Dataset):
             _elem_type = list[list[int]]
             _elem_shape = "[None, None]"
         else:
-            # Tuple[List[int], ...] -> Tuple[List[List[int]], ...]
+            # tuple[list[int], ...] -> tuple[list[list[int]], ...]
             args = _elem_spec.elem_type.__args__
             args = [list[t] for t in args]
             _elem_type = tuple[tuple(args)]

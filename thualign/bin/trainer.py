@@ -319,8 +319,7 @@ def main(args):
             summary.scalar("global_step/sec", t, step)
 
             if dist.get_rank() == 0 and step % params.log_interval == 0 and counter % params.update_cycle == 0:
-                print("epoch = %d, step = %d, %s (%.3f sec)" %
-                      (epoch + 1, step, log_info, t))
+                print(f"epoch = {epoch + 1:}, step = {step:}, {log_info} ({t:.3f} sec)")
 
             if counter % params.update_cycle == 0:
                 if step >= params.train_steps:
