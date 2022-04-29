@@ -1,10 +1,11 @@
+#!/usr/bin/env python
 import os
 import re
 import random
 
 def main() -> None:
-    file1 = open("./output-indexes.txt", "r", encoding="utf-8")
-    file2 = open("./answers_indexes.es", "r", encoding="utf-8")
+    file1 = open("output-indexes.txt", "r", encoding="utf-8")
+    file2 = open("answers_indexes.es", "r", encoding="utf-8")
     output_file = open("./exact-match.txt", "w", encoding="utf-8")
 
     lines1 = file1.readlines()

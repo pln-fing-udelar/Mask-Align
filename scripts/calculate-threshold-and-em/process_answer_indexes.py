@@ -55,8 +55,8 @@ def process_answer_indexes(sentences, sentences_tok, answer_indexes, answer_inde
 
 
 def main() -> None:
-    process_answer_indexes("./sentences.es", "./sentences.32k.es", "./answers_indexes.es", "./answers.es")
-    process_answer_indexes("./sentences.en", "./sentences.32k.en", "./answers_indexes.en", "./answers.en")
+    process_answer_indexes("sentences.es", "sentences.32k.es", "answers_indexes.es", "answers.es")
+    process_answer_indexes("sentences.en", "sentences.32k.en", "answers_indexes.en", "answers.en")
 
 
 if __name__ == "__main__":
