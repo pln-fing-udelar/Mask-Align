@@ -22,7 +22,7 @@ conda env create
 conda activate mask-align
 ```
 
-Finally, run the following script to generate vocabularies for english and spanish:
+Finally, run the following script to download the [Europarl Spanish-English parallel corpus](https://www.statmt.org/europarl/v7/es-en.tgz) and generate vocabularies for english and spanish:
 
 ```bash
 ./scripts/train-mask-align/learn_vocabulary.sh
@@ -41,7 +41,7 @@ Alternatively, follow these steps to train it yourself.
 
 ### Prepare the Corpus
 
-Run the following script to download the [Europarl Spanish-English parallel corpus](https://www.statmt.org/europarl/v7/es-en.tgz), do some preprocessing, tokenize the sentences, and split the corpus:
+Run the following script to do some preprocessing, tokenize sentences, and split the corpus:
 
 ```bash
 ./scripts/train-mask-align/preprocess_europarl.sh
