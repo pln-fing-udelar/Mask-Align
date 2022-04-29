@@ -2,6 +2,8 @@
 
 set -ex
 
+cd corpus-es/
+
 ../scripts/train-mask-align/process_vocab.py
 
 sed -i 's/<s>/<pad>/g' vocab.32k.es.txt
