@@ -34,7 +34,7 @@ We need a trained Mask-Align model to align translations between English and Spa
 
 ```bash
 mkdir -p spanish-output/output
-curl -o spanish-output/output/model-1.pt https://www.fing.edu.uy/owncloud/index.php/s/siRkUqxnwmdtfaJ/download
+wget -O spanish-output/output/model-1.pt https://github.com/pln-fing-udelar/Mask-Align/releases/download/pretrained-model/model-1.pt
 ```
 
 Alternatively, follow these steps to train it yourself.
