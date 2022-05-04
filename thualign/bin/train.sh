@@ -1,4 +1,4 @@
-# coding=utf-8
+#!/usr/bin/env bash
 # Copyright 2021-Present The THUAlign Authors
 
 CLI_DIR=$(cd "$(dirname "$0")" || exit; pwd)
