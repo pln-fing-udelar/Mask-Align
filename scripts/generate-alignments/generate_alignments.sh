@@ -12,7 +12,7 @@ spm_encode --model=es.model --output_format=piece < sentences.es > sentences.32k
 
 ../scripts/generate-alignments/process_answer_indexes.py
 
-../thualign/bin/generate.sh -s spanish -o output.txt
+../thualign/bin/generate.sh -s spanish -o output
 
 spm_decode --model=es.model --input_format=piece < output.txt > output-plain.txt
 
