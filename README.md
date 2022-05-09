@@ -22,7 +22,9 @@ conda env create
 conda activate mask-align
 ```
 
-Finally, run the following script to download the [Europarl Spanish-English parallel corpus](https://www.statmt.org/europarl/v7/es-en.tgz) and generate vocabularies for english and spanish:
+Finally, run the following script to download the
+[Europarl Spanish-English parallel corpus](https://www.statmt.org/europarl/v7/es-en.tgz) and generate vocabularies for
+English and Spanish:
 
 ```bash
 ./scripts/train-mask-align/learn_vocabulary.sh
@@ -30,7 +32,8 @@ Finally, run the following script to download the [Europarl Spanish-English para
 
 ## Training Mask-Align in English-Spanish
 
-We need a trained Mask-Align model to align translations between English and Spanish. To download the pretrained model, run the following commands:
+We need a trained Mask-Align model to align translations between English and Spanish. To download the pretrained model,
+run the following commands:
 
 ```bash
 mkdir -p spanish-output/output
@@ -85,7 +88,7 @@ Note you need a computer with a CUDA-capable GPU to train the model.
    ``` 
 
 2. The alignments are generated in `spanish-output/output/test/alignments.txt`.
-3. To see the alignments in an interactive way, run:
+3. To see the alignments in an interactive way with a web browser, run:
 
    ```bash
    ./thualign/scripts/visualize.py spanish-output/output/test/alignment_vizdata.pt
@@ -93,13 +96,15 @@ Note you need a computer with a CUDA-capable GPU to train the model.
 
 ### Adjust threshold and calculate exact match
 
-A threshold is used in the Mask-Align algorithm to decide which words are included in the alignment of the answers and which ones aren't. To calculate the optimal value for this treshold you can run the following script:
+A threshold is used in the Mask-Align algorithm to decide which words are included in the alignment of the answers and
+which ones aren't. To calculate the optimal value for this threshold you can run the following script:
 
 ```bash
 ./scripts/calculate-threshold-and-em/calculate_threshold.sh
 ```
 
-Also, if you wish to test the alignment of answers in the NewsQA dataset, you can run the following script to calculate the Exact Match measure over some anotated examples:
+Also, if you want to test the alignment of answers in the NewsQA dataset, run the following script to compute the 
+Exact Match measure over some annotated examples:
 
 ```bash
 ./scripts/calculate-threshold-and-em/calculate_em.sh

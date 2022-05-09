@@ -5,10 +5,10 @@ import re
 # For the corpus https://opus.nlpl.eu/download.php?f=WikiMatrix/v1/tmx/en-es.tmx.gz
 
 def process_vocab(input_path: str, output_path: str) -> None:
-    with open(input_path, encoding="utf-8") as vocab, open(output_path, "w", encoding="utf-8") as vocab_final:
-        for line in vocab:
+    with open(input_path, encoding="utf-8") as input_file, open(output_path, "w", encoding="utf-8") as output_file:
+        for line in input_file:
             if token := re.search(r"(.*?)\t", line).group(1):
-                vocab_final.write(token + "\n")
+                output_file.write(token + "\n")
 
 
 def main() -> None:

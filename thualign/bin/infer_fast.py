@@ -14,21 +14,20 @@ import thualign.utils as utils
 import thualign.utils.alignment as alignment_utils
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Generate alignments neural alignment models",
         usage="infer_fast.py [<args>] [-h | --help]"
     )
     # test args
-    parser.add_argument("--alignment-output", type=str, help="path to save generated alignments")
+    parser.add_argument("--alignment-output", help="path to save generated alignments")
 
     # configure file
-    parser.add_argument("--config", type=str, required=True,
-                        help="Provided config file")
-    parser.add_argument("--base-config", type=str, help="base config file")
-    parser.add_argument("--data-config", type=str, help="data config file")
-    parser.add_argument("--model-config", type=str, help="base config file")
-    parser.add_argument("--exp", "-e", default='DEFAULT', type=str, help="name of experiments")
+    parser.add_argument("--config", required=True, help="Provided config file")
+    parser.add_argument("--base-config", help="base config file")
+    parser.add_argument("--data-config", help="data config file")
+    parser.add_argument("--model-config", help="base config file")
+    parser.add_argument("--exp", "-e", default='DEFAULT', help="name of experiments")
 
     return parser.parse_args()
 
@@ -84,16 +83,12 @@ def get_answer_token_indexes(ans_idxs, tokens):
 
 
 def gen_align(params):
-    """Generate alignments
-    """
-
+    """Generate alignments"""
     with socket.socket() as s:
         s.bind(("localhost", 0))
         port = s.getsockname()[1]
         url = "tcp://localhost:" + str(port)
-    dist.init_process_group("nccl", init_method=url,
-                            rank=0,
-                            world_size=1)
+    dist.init_process_group("nccl", init_method=url, rank=0, world_size=1)
 
     params = load_vocabulary(params)
     checkpoint = getattr(params, "checkpoint", None) or utils.best_checkpoint(params.output)
@@ -106,7 +101,6 @@ def gen_align(params):
 
     # Create model
     with torch.no_grad():
-
         model = models.get_model(params).cuda()
 
         if params.half:
@@ -127,27 +121,25 @@ def gen_align(params):
         # Buffers for synchronization
         results = [0., 0.]
 
-        extract_params = alignment_utils.get_extract_params(params)
-
         print(f"src_file: {os.path.abspath(params.alignment_input[0])}\n"
               f"tgt_file: {os.path.abspath(params.alignment_input[1])}\n"
               f"src_ans_file: {os.path.abspath(params.test_answers[0])}\n"
               f"tgt_ans_file: {os.path.abspath(params.test_answers[1])}\n"
               f"alignment_output: {os.path.abspath(params.alignment_output)}")
 
-        src_file = open(params.alignment_input[0], encoding="utf8")
-        tgt_file = open(params.alignment_input[1], encoding="utf8")
+        src_file = open(params.alignment_input[0], encoding="utf-8")
+        tgt_file = open(params.alignment_input[1], encoding="utf-8")
 
         src_ans_file = None
         if os.path.exists(params.test_answers[0]):
-            src_ans_file = open(params.test_answers[0], encoding="utf8")
+            src_ans_file = open(params.test_answers[0], encoding="utf-8")
         
-        tgt_ans_file = open(params.test_answers[1], encoding="utf8")
+        tgt_ans_file = open(params.test_answers[1], encoding="utf-8")
 
-        output_sentences = open(params.alignment_output + ".txt", 'w', encoding="utf8")
-        output_answers = open(params.alignment_output + "2.txt", 'w', encoding="utf8")
+        output_sentences = open(params.alignment_output + ".txt", 'w', encoding="utf-8")
+        output_answers = open(params.alignment_output + "2.txt", 'w', encoding="utf-8")
         if src_ans_file:
-            output_tokens = open(params.alignment_output + "3.txt", 'w', encoding="utf8")
+            output_tokens = open(params.alignment_output + "3.txt", 'w', encoding="utf-8")
 
         while True:
             try:
@@ -198,15 +190,14 @@ def gen_align(params):
                 first_word_in_answer = get_first_greater_than(weight_added_per_word, threshold)
                 last_word_in_answer = get_last_greater_than(weight_added_per_word, threshold)
 
-
                 if src_ans_file:
                     # Generate output with the tokens of the sentence and their probabilities
-                    for i in range(0, len(src)):
+                    for i in range(len(src)):
                         if i < len(weight_added_per_word):
-                            token = str(src[i])
-                            value = str(float(weight_added_per_word[i]))
-                            is_ans = str(i >= src_answer_position[0] and i < src_answer_position[1])
-                            output_tokens.write(token + " " + value + " " + is_ans + "\n")
+                            token = src[i]
+                            value = float(weight_added_per_word[i])
+                            is_ans = src_answer_position[0] <= i < src_answer_position[1]
+                            output_tokens.write(f"{token} {value} {is_ans}\n")
 
                 # Extract the answer in spanish and insert brackets into the sentence to show its position
                 ans_es = ""
@@ -227,12 +218,13 @@ def gen_align(params):
                 output_answers.write(ans_es + '\n')
 
             t = time.time() - t
-            print("Finished batch(%d): %.3f (%.3f sec)" % (counter, score, t))
+            print(f"Finished batch {counter}: {score:.3f} ({t:.3f} sec)")
 
         print(f"acc_rate: {0.0 if results[1] == 0 else results[0] / results[1]}")
 
 
-def main(args) -> None:
+def main() -> None:
+    args = parse_args()
     params = utils.Config.read(args.config, base=args.base_config, data=args.data_config, model=args.model_config,
                                exp=args.exp)
     params.alignment_output = args.alignment_output
@@ -240,4 +232,4 @@ def main(args) -> None:
 
 
 if __name__ == "__main__":
-    main(parse_args())
+    main()

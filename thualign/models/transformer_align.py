@@ -195,8 +195,7 @@ class TransformerAlign(AlignmentModel):
             self.encoder = TransformerEncoder(params)
             self.decoder = TransformerDecoder(params)
 
-        self.criterion = modules.SmoothedCrossEntropyLoss(
-            params.label_smoothing)
+        self.criterion = modules.SmoothedCrossEntropyLoss(params.label_smoothing)
         self.dropout = params.residual_dropout
         self.hidden_size = params.hidden_size
         self.num_encoder_layers = params.num_encoder_layers
@@ -227,7 +226,6 @@ class TransformerAlign(AlignmentModel):
         tgt_seq = torch.cat([torch.ones(tgt_seq.shape[0], 1).to(tgt_seq), tgt_seq], dim=1)[:, :-1]
 
         enc_attn_bias = state["enc_attn_bias"]
-        dec_mask = features['target_mask']  # b x n
         dec_attn_bias = self.causal_bias(tgt_seq.shape[1])
 
         targets = torch.nn.functional.embedding(tgt_seq, self.tgt_embedding)
@@ -283,18 +281,7 @@ class TransformerAlign(AlignmentModel):
         return loss, log_output
 
     def empty_state(self, batch_size, device):
-        # state = {
-        #     "decoder": {
-        #         "layer_%d" % i: {
-        #             "k": torch.zeros([batch_size, 0, self.hidden_size],
-        #                              device=device),
-        #             "v": torch.zeros([batch_size, 0, self.hidden_size],
-        #                              device=device)
-        #         } for i in range(self.num_decoder_layers)
-        #     }
-        # }
-        state = {}
-        return state
+        return {}
 
     def cal_alignment(self, features):
         if isinstance(features, tuple):

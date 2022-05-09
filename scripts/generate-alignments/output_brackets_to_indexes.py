@@ -8,9 +8,7 @@ def main() -> None:
             open("output-answers.txt", "w", encoding="utf-8") as answer_file, \
             open("output-sentences.txt", "w", encoding="utf-8") as sentence_file:
         for line in input_file:
-            match1 = re.search("{{", line)
-            match2 = re.search("}}", line)
-            if match1 and match2:
+            if (match1 := re.search("{{", line)) and (match2 := re.search("}}", line)):
                 start_idx = match1.span()[0]
                 end_idx = match2.span()[0] - 2
                 line = re.sub(r"{{", "", line)
@@ -19,7 +17,7 @@ def main() -> None:
                 while line[start_idx] == " ":
                     start_idx += 1
 
-                output_file.write(str(start_idx) + ":" + str(end_idx) + "\n")
+                output_file.write(f"{start_idx}:{end_idx}\n")
                 answer_file.write(line[start_idx:end_idx] + "\n")
                 sentence_file.write(line)
             else:
