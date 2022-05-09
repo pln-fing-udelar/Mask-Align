@@ -1,58 +1,30 @@
 #!/usr/bin/env python
-import os
 import re
-import random
 
-# For the corpus https://opus.nlpl.eu/download.php?f=WikiMatrix/v1/tmx/en-es.tmx.gz
 
 def process_answer_indexes(sentences, sentences_tok, answer_indexes, answer_indexes_tok):
-    sentences_untokenized = open(sentences, "r", encoding="utf-8")
-    sentences_tokenized = open(sentences_tok, "r", encoding="utf-8")
-    answer_indexes_untokenized = open(answer_indexes, "r", encoding="utf-8")
-    answer_indexes_tokenized = open(answer_indexes_tok, "w", encoding="utf-8")
+    with open(sentences, encoding="utf-8") as sentences_file, \
+            open(sentences_tok, encoding="utf-8") as sentences_tokenized_file, \
+            open(answer_indexes, encoding="utf-8") as answer_indexes_file, \
+            open(answer_indexes_tok, "w", encoding="utf-8") as answer_indexes_tokenized_file:
+        for sentence, tokenizer_sentence, indices_str in zip(sentences_file, sentences_tokenized_file,
+                                                             answer_indexes_file):
+            sentence = sentence.replace("$", "Ç")
+            tokenizer_sentence = tokenizer_sentence.replace("$", "Ç")
 
-    data1 = sentences_untokenized.readlines()
-    data2 = sentences_tokenized.readlines()
-    data3 = answer_indexes_untokenized.readlines()
-    num_sentences = min(min(len(data1), len(data2)), len(data3))
+            indices_pair_str = indices_str.split(":", maxsplit=1)
+            start_index, end_index = int(indices_pair_str[0]), int(indices_pair_str[1]) - 1
+            ans = sentence[start_index:end_index]
 
-    for i in range(0, num_sentences):
-        sentence_untok = data1[i]
-        sentence_tok = data2[i]
-        
-        sentence_untok = sentence_untok.replace("$", r"Ç")
-        sentence_tok = sentence_tok.replace("$", r"Ç")
-        
-        idx1 = int(data3[i].split(':')[0])
-        idx2 = int(data3[i].split(':')[1]) - 1
-        
-        ans = r'{}'.format(sentence_untok[idx1:idx2])
-        
-        occurences_before = re.findall(ans, sentence_untok[:idx1])
-        num_before = len(occurences_before)
-            
-        pattern1 = r'{}'.format("[\s▁]*".join(list(ans)))
-        pattern2 = r'{}'.format("[\s▁]*".join(list(re.sub("[^\w\s]", "", ans))))
+            occurrences_before = re.findall(ans, sentence[:start_index])
+            num_before = len(occurrences_before)
 
-        ocurrences_tokenized = list(re.finditer(pattern1, sentence_tok))
-        
-        if len(ocurrences_tokenized) == 0:
-            ocurrences_tokenized = list(re.finditer(pattern2, sentence_tok))
+            occurrences_tokenized = list(re.finditer(r"[\s▁]*".join(ans), tokenizer_sentence)) or list(
+                re.finditer(r"[\s▁]*".join(iter(re.sub(r"[^\w\s]", "", ans))), tokenizer_sentence))
 
-        match = ocurrences_tokenized[num_before]
-        
-        new_idx1 = match.span()[0]
-        new_idx2 = match.span()[1]
+            start_token_idx, end_token_idx = occurrences_tokenized[num_before].span()[:2]
 
-        sentence_untok = sentence_untok.replace("Ç", "$")
-        sentence_tok = sentence_tok.replace("Ç", "$")
-
-        answer_indexes_tokenized.write(str(new_idx1) + ":" + str(new_idx2) + "\n")
-
-    sentences_untokenized.close()
-    sentences_tokenized.close()
-    answer_indexes_untokenized.close()
-    answer_indexes_tokenized.close()
+            answer_indexes_tokenized_file.write(f"{start_token_idx}:{end_token_idx}\n")
 
 
 def main() -> None:

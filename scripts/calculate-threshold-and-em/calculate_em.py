@@ -1,42 +1,33 @@
 #!/usr/bin/env python
-import os
-import re
-import random
+
 
 def main() -> None:
-    file1 = open("output-indexes.txt", "r", encoding="utf-8")
-    file2 = open("answers_indexes.es", "r", encoding="utf-8")
-    output_file = open("./exact-match.txt", "w", encoding="utf-8")
+    correct = 0
+    total = 0
 
-    lines1 = file1.readlines()
-    lines2 = file2.readlines()
+    with open("output-indexes.txt", encoding="utf-8") as pred_file, \
+            open("answers_indexes.es", encoding="utf-8") as gt_file2:
+        pred_file = iter(pred_file)
 
-    right = 0
-    wrong = 0
+        next(pred_file)  # Skip the header.
 
-    for idx, line in enumerate(lines1):
-        line1 = re.sub(r"\n", '', lines1[idx])
-        line2 = re.sub(r"\n", '', lines2[idx])
-        
-        if not line1:
-            wrong += 1
-            continue
+        for pred_line, gt_line in zip(pred_file, gt_file2):
+            pred_line = pred_line.strip()
+            gt_line = gt_line.strip()
 
-        start1 = int(line1.split(':')[0])
-        end1 = int(line1.split(':')[1]) + 1
-        start2 = int(line2.split(':')[0])
-        end2 = int(line2.split(':')[1])
+            total += 1
 
-        if start1 == start2 and end1 == end2:
-            right += 1
-        else:
-            wrong += 1
+            if pred_line:
+                pred_start_end_str = pred_line.split(':', maxsplit=1)
+                pred_start, pred_end = int(pred_start_end_str[0]), int(pred_start_end_str[1]) + 1
 
-    output_file.write("The exact match measure is: " + str(right / (right + wrong)))
+                gt_start_end_str = gt_line.split(':', maxsplit=1)
+                gt_start, gt_end = int(gt_start_end_str[0]), int(gt_start_end_str[1])
 
-    file1.close()
-    file2.close()
-    output_file.close()
+                correct += int(pred_start == gt_start and pred_end == gt_end)
+
+    print("EM:", correct / total)
+
 
 if __name__ == "__main__":
     main()

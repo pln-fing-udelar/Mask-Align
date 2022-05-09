@@ -17,7 +17,7 @@ import thualign.utils as utils
 import thualign.utils.alignment as alignment_utils
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Test neural alignment models",
         usage="inferrer.py [<args>] [-h | --help]"
@@ -28,12 +28,11 @@ def parse_args():
     parser.add_argument("--test-aer", action="store_true", help="whether to test aer for alignments")
 
     # configure file
-    parser.add_argument("--config", type=str, required=True,
-                        help="Provided config file")
-    parser.add_argument("--base-config", type=str, help="base config file")
-    parser.add_argument("--data-config", type=str, help="data config file")
-    parser.add_argument("--model-config", type=str, help="base config file")
-    parser.add_argument("--exp", "-e", default='DEFAULT', type=str, help="name of experiments")
+    parser.add_argument("--config", required=True, help="Provided config file")
+    parser.add_argument("--base-config", help="base config file")
+    parser.add_argument("--data-config", help="data config file")
+    parser.add_argument("--model-config", help="base config file")
+    parser.add_argument("--exp", "-e", default='DEFAULT', help="name of experiments")
 
     return parser.parse_args()
 
@@ -47,27 +46,20 @@ def load_vocabulary(params):
 
 
 def to_cuda(features):
-    for key in features:
-        features[key] = features[key].cuda()
-
-    return features
+    return {k: v.cuda() for k, v in features.items()}
 
 
 def gen_weights(params):
     """Generate attention weights 
     """
-
     with socket.socket() as s:
         s.bind(("localhost", 0))
         port = s.getsockname()[1]
         url = "tcp://localhost:" + str(port)
-    dist.init_process_group("nccl", init_method=url,
-                            rank=0,
-                            world_size=1)
+    dist.init_process_group("nccl", init_method=url, rank=0, world_size=1)
 
     params = load_vocabulary(params)
     checkpoint = getattr(params, "checkpoint", None) or utils.best_checkpoint(params.output)
-    # checkpoint = getattr(params, "checkpoint", None) or utils.latest_checkpoint(params.output)
 
     torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
@@ -89,7 +81,6 @@ def gen_weights(params):
 
     # Create model
     with torch.no_grad():
-
         model = models.get_model(params).cuda()
 
         if params.half:
@@ -128,7 +119,6 @@ def gen_weights(params):
             try:
                 features = next(iterator)
                 features = to_cuda(features)
-                batch_size = features["source"].shape[0]
             except:
                 break
 
@@ -202,7 +192,6 @@ def gen_weights(params):
 def gen_align(params):
     """Generate alignment
     """
-
     src = [l.strip().split() for l in open(params.test_input[0])]
     tgt = [l.strip().split() for l in open(params.test_input[1])]
 
@@ -383,10 +372,9 @@ def gen_align(params):
             align_out = open(output_name, 'w')
             for align in hyp:
                 align_out.write(str(align) + '\n')
-            print('{}: {:.1f}% ({:.1f}%/{:.1f}%/{})'.format(output_name, a * 100, p * 100, r * 100,
-                                                            sum(len(x) for x in hyp)))
-            fout.write('{}: {:.1f}% ({:.1f}%/{:.1f}%/{})'.format(output_name, a * 100, p * 100, r * 100,
-                                                                 sum(len(x) for x in hyp)) + '\n')
+            output = f'{output_name}: {a * 100:.1f}% ({p * 100:.1f}%/{r * 100:.1f}%/{sum(len(x) for x in hyp)})'
+            print(output)
+            fout.write(output + '\n')
             scores[l] = a
         fout.write('\n')
         fout.close()
@@ -407,7 +395,7 @@ def gen_align(params):
             elif 'soft' in hyps.keys():
                 k = 'soft'
             else:
-                k = hyps.keys()[0]
+                k = next(iter(hyps.keys()))
             for align in hyps[k]:
                 align_out.write(str(align) + '\n')
 
@@ -448,7 +436,7 @@ def merge(forward_vizdata, backward_vizdata, bialigns):
     return res
 
 
-def main(args):
+def main(args: argparse.Namespace) -> None:
     exps = args.exp.split(',')
     exp_params = []
 
@@ -483,20 +471,13 @@ def main(args):
         output_alignment_file = os.path.join(common_path, 'alignment.txt')
 
         # combine bidirectional alignments
-        completedProcess = subprocess.run(
-            'python {script} {alignments} --dont_reverse --method grow-diagonal > {output}'.format(
-                script=thualign.scripts.combine_bidirectional_alignments.__file__,
-                alignments=' '.join([os.path.join(test_path, 'alignment.txt') for test_path in test_paths]),
-                output=output_alignment_file
-            ), shell=True)
+        subprocess.run(f'python {thualign.scripts.combine_bidirectional_alignments.__file__}'
+                       f' {" ".join([os.path.join(test_path, "alignment.txt") for test_path in test_paths])}'
+                       f' --dont_reverse --method grow-diagonal > {output_alignment_file}', shell=True)
 
         # calculate aer for combined alignments
-        completedProcess = subprocess.run('python {script} {ref} {alignment} > {aer_res}'.format(
-            script=thualign.scripts.aer.__file__,
-            ref=exp_params[0].test_ref,
-            alignment=output_alignment_file,
-            aer_res=os.path.join(common_path, 'aer_res.txt')
-        ), shell=True)
+        subprocess.run(f'python {thualign.scripts.aer.__file__} {exp_params[0].test_ref} {output_alignment_file}'
+                       f' > {os.path.join(common_path, "aer_res.txt")}', shell=True)
 
         print(open(os.path.join(common_path, 'aer_res.txt')).read())
 

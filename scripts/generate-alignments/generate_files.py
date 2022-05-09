@@ -13,14 +13,14 @@ def extract_first_answer(text: str) -> str:
 
 
 def main() -> None:
-    with open("newsqa_filtered.csv", encoding="utf8") as csv_input, \
-            open("sentences.en", "w", encoding="utf8") as output_src, \
-            open("sentences.es", "w", encoding="utf8") as output_tgt, \
-            open("answers-indexes.en.txt", "w", encoding="utf8") as output_ans_idx_en, \
-            open("answers.en.txt", "w", encoding="utf8") as output_ans_en:
-        csv_reader = iter(csv.reader(csv_input))
-        next(csv_reader)  # Skip the header.
-        for row in csv_reader:
+    with open("newsqa_filtered.csv", encoding="utf-8") as csv_input, \
+            open("sentences.en", "w", encoding="utf-8") as output_src, \
+            open("sentences.es", "w", encoding="utf-8") as output_tgt, \
+            open("answers-indexes.en.txt", "w", encoding="utf-8") as output_ans_idx_en, \
+            open("answers.en.txt", "w", encoding="utf-8") as output_ans_en:
+        csv_reader_iterator = iter(csv.reader(csv_input))
+        next(csv_reader_iterator)  # Skip the header.
+        for row in csv_reader_iterator:
             if indexes := re.search(r"\d+:\d+", row[5]):
                 ans_start, ans_end = indexes.group(0).split(":")
                 if int(ans_start) > -1 and int(ans_end) > -1:

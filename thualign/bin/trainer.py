@@ -18,31 +18,26 @@ import thualign.utils as utils
 import thualign.utils.summary as summary
 
 
-def parse_args(args=None):
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Train neural alignment models",
         usage="trainer.py [<args>] [-h | --help]"
     )
 
     # input files
-    parser.add_argument("--checkpoint", type=str,
-                        help="Path to pre-trained checkpoint")
-    parser.add_argument("--distributed", action="store_true",
-                        help="Enable distributed training mode")
-    parser.add_argument("--local_rank", type=int,
-                        help="Local rank of this process")
-    parser.add_argument("--half", action="store_true",
-                        help="Enable mixed precision training")
+    parser.add_argument("--checkpoint", help="Path to pre-trained checkpoint")
+    parser.add_argument("--distributed", action="store_true", help="Enable distributed training mode")
+    parser.add_argument("--local_rank", type=int, help="Local rank of this process")
+    parser.add_argument("--half", action="store_true", help="Enable mixed precision training")
 
     # configure file
-    parser.add_argument("--config", type=str, required=True,
-                        help="Provided config file")
-    parser.add_argument("--base-config", type=str, help="base config file")
-    parser.add_argument("--data-config", type=str, help="data config file")
-    parser.add_argument("--model-config", type=str, help="base config file")
-    parser.add_argument("--exp", default='DEFAULT', type=str, help="name of experiments")
+    parser.add_argument("--config", required=True, help="Provided config file")
+    parser.add_argument("--base-config", help="base config file")
+    parser.add_argument("--data-config", help="data config file")
+    parser.add_argument("--model-config", help="base config file")
+    parser.add_argument("--exp", default='DEFAULT', help="name of experiments")
 
-    return parser.parse_args(args)
+    return parser.parse_args()
 
 
 def export_params(output_dir, name, params):
@@ -197,12 +192,8 @@ def load_references(pattern):
     references = []
 
     for name in files:
-        ref = []
-        with open(name, "rb") as fd:
-            for line in fd:
-                items = line.strip().split()
-                ref.append(items)
-        references.append(ref)
+        with open(name, "rb") as file:
+            references.append([line.strip().split() for line in file])
 
     return list(zip(*references))
 
@@ -225,9 +216,7 @@ def main(args):
         torch.cuda.set_device(args.local_rank)
         torch.set_default_tensor_type(torch.cuda.FloatTensor)
     else:
-        dist.init_process_group("nccl", init_method=args.url,
-                                rank=args.local_rank,
-                                world_size=len(params.device_list))
+        dist.init_process_group("nccl", init_method=args.url, rank=args.local_rank, world_size=len(params.device_list))
         torch.cuda.set_device(params.device_list[args.local_rank])
         torch.set_default_tensor_type(torch.cuda.FloatTensor)
 
@@ -260,8 +249,7 @@ def main(args):
         print(params)
         print(model)
 
-    trainable_flags = print_variables(model, "",
-                                      dist.get_rank() == 0)
+    trainable_flags = print_variables(model, "", dist.get_rank() == 0)
 
     # Train Dataset
     dataset = data.AlignmentPipeline.get_train_dataset(params.train_input, params)
@@ -349,7 +337,7 @@ def process_fn(rank, args):
     main(local_args)
 
 
-def cli_main():
+def cli_main() -> None:
     parsed_args = parse_args()
 
     if parsed_args.distributed:
@@ -367,8 +355,7 @@ def cli_main():
         world_size = len(params.device_list)
 
         if world_size > 1:
-            torch.multiprocessing.spawn(process_fn, args=(parsed_args,),
-                                        nprocs=world_size)
+            torch.multiprocessing.spawn(process_fn, args=(parsed_args,), nprocs=world_size)
         else:
             process_fn(0, parsed_args)
 

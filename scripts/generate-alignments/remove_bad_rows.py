@@ -3,37 +3,31 @@
 import csv
 import re
 
-csv_input = open("newsqa.csv", encoding="utf8")
-csv_input2 = open("newsqa.csv", encoding="utf8")
-csv_data = list(csv.reader(csv_input, delimiter=','))
-csv_lines = csv_input2.readlines()
 
-csv_output = open("newsqa_filtered.csv", "w", encoding="utf8")
-csv_output2 = open("newsqa_bad_rows.csv", "w", encoding="utf8")
+def main() -> None:
+    with open("newsqa.csv", encoding="utf-8") as input_file:
+        rows = [[entry.strip() for entry in row] for row in csv.reader(input_file)][1:]
+    with open("newsqa.csv", encoding="utf-8") as input_file:
+        lines = input_file.readlines()
 
-csv_output.write(csv_lines[0])
-csv_output2.write(csv_lines[0])
+    with open("newsqa_filtered.csv", "w", encoding="utf-8") as filtered_output_file, \
+            open("newsqa_bad_rows.csv", "w", encoding="utf-8") as bad_rows_output_file:
+        filtered_output_file.write(lines[0])
+        bad_rows_output_file.write(lines[0])
 
-for idx, entry in enumerate(csv_data[1:]):
-    ans_start = -1
-    ans_end = -1
-    indexes = re.search(r"\d+:\d+", entry[5])
-    if indexes:
-        ans_start = int(indexes.group(0).split(":")[0])
-        ans_end = int(indexes.group(0).split(":")[1])
+        lines = lines[1:]
 
-    if re.match(r"^(\s|\t|\n|\r)*$", str(entry[0])) is None and re.match(r"^(\s|\t|\n|\r)*$", str(entry[1])) is None \
-            and re.match(r"^(\s|\t|\n|\r)*$", str(entry[2])) is None \
-            and re.match(r"^(\s|\t|\n|\r)*$", str(entry[3])) is None \
-            and re.match(r"^(\s|\t|\n|\r)*$", str(entry[4])) is None \
-            and re.match(r"^(\s|\t|\n|\r)*$", str(entry[5])) is None and "*" not in str(entry[2]) \
-            and "Ã" not in str(entry[3]) and idx != 33676 and idx != 33677 and idx != 116925 and idx != 116926 \
-            and ans_start > -1 and ans_end > -1:
-        csv_output.write(csv_lines[idx + 1])
-    else:
-        csv_output2.write(csv_lines[idx + 1])
+        for i, (line, row) in enumerate(zip(lines, rows)):
+            question_id, question, answer, sentences, sentence_es, answer_offsets_sentence = row[:6]
+            if question_id and question and answer and sentences and sentence_es and answer_offsets_sentence \
+                    and "*" not in answer and "Ã" not in sentences and i not in {33676, 33677, 116925, 116926} \
+                    and re.search(r"\d+:\d+", answer_offsets_sentence):
+                output_file = filtered_output_file
+            else:
+                output_file = bad_rows_output_file
 
-csv_input.close()
-csv_input2.close()
-csv_output.close()
-csv_output2.close()
+            output_file.write(line)
+
+
+if __name__ == "__main__":
+    main()

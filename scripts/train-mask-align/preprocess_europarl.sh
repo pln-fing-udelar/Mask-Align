@@ -4,13 +4,6 @@ set -ex
 
 cd corpus-es/
 
-../scripts/train-mask-align/process_vocab.py
-
-sed -i 's/<s>/<pad>/g' vocab.32k.es.txt
-sed -i 's/<\/s>/<eos>/g' vocab.32k.es.txt
-sed -i 's/<s>/<pad>/g' vocab.32k.en.txt
-sed -i 's/<\/s>/<eos>/g' vocab.32k.en.txt
-
 spm_encode --model=en.model --output_format=piece < corpus.en > corpus.32k.en
 spm_encode --model=en.model --output_format=piece < validation.en > validation.32k.en
 spm_encode --model=en.model --output_format=piece < test.en > test.32k.en

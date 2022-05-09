@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # Copyright 2021-Present The THUAlign Authors
 
+set -ex
+
 CLI_DIR=$(cd "$(dirname "$0")" || exit; pwd)
 
 code_dir="$CLI_DIR/.."
-export PYTHONPATH="$PYTHON:$code_dir"
+export PYTHONPATH="$PYTHON:$code_dir/.."
 
 EXP="DEFAULT"
 suffix=""
